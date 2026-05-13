@@ -6,65 +6,9 @@ from pathlib import Path
 from typing import List, Dict, Optional
 import os
 import signal
-
-# モード設定（環境変数 TASK_MODE=test でテストモード）
-MODE = os.getenv("TASK_MODE", "production")
-
-# 定数
-INTERVAL_MS = 5000 if MODE == "test" else 30 * 60 * 1000  # テスト用5秒、本番用30分
-SNOOZE_MS = 5 * 60 * 1000  # 5分
-
-# 色定数
-COLOR_HIGH = "#ffcdd2"
-COLOR_MEDIUM = "#fff9c4"
-COLOR_LOW = "#e8f5e9"
-COLOR_NONE = "#ffffff"
-PRIMARY_COLOR = "#4CAF50"
-
-# ウィンドウサイズ
-WINDOW_WIDTH = 700
-WINDOW_HEIGHT = 700
-DIALOG_WIDTH = 480
-DIALOG_HEIGHT = 520
-
-# フォント（Segoe UI統一）
-FONT_FAMILY = "Meiryo"
-
-
-class DragDropListbox(tk.Listbox):
-    """ドラッグ＆ドロップ対応Listbox"""
-    def __init__(self, master, drag_callback=None, **kw):
-        kw['selectmode'] = tk.SINGLE
-        super().__init__(master, **kw)
-        self.drag_callback = drag_callback
-        self.bind('<Button-1>', self.set_current)
-        self.bind('<B1-Motion>', self.shift_selection)
-        self.cur_index = None
-    
-    def set_current(self, event):
-        """ドラッグ開始位置を記録"""
-        self.cur_index = self.nearest(event.y)
-    
-    def shift_selection(self, event):
-        """ドラッグ中の並び替え"""
-        i = self.nearest(event.y)
-        if self.cur_index is None or i == self.cur_index:
-            return
-        
-        if i < self.cur_index:
-            x = self.get(i)
-            self.delete(i)
-            self.insert(i + 1, x)
-            self.cur_index = i
-            if self.drag_callback:
-                self.drag_callback(i + 1, i)
-        elif i > self.cur_index:
-            x = self.get(i)
-            self.delete(i)
-            self.insert(i - 1, x)
-            self.cur_index = i
-            if self.drag_callback:
-                self.drag_callback(i - 1, i)
+from constants import *
+from drag_drop_listbox import DragDropListbox
+from improvement_request_manager import ImprovementRequestManager
 
 
 class TaskManagerApp:
@@ -77,6 +21,7 @@ class TaskManagerApp:
         self.root.option_add("*Menu.font", default_font)
         
         # モードに応じた保存先設定
+        MODE = os.getenv("TASK_MODE", "production")
         filename = "tasks_test.json" if MODE == "test" else "tasks.json"
         self.data_file = Path.home() / filename
         self.tasks: List[Dict] = []
@@ -84,6 +29,9 @@ class TaskManagerApp:
         self.load_tasks()
         
         self.scheduled_timer: Optional[str] = None
+        
+        # 改修要望マネージャー
+        self.improvement_manager = ImprovementRequestManager(self.root, MODE)
         
         # UI要素
         self.task_entry: Optional[tk.Entry] = None
@@ -96,9 +44,6 @@ class TaskManagerApp:
         
         # フィルタ/ソート後の表示用タスクリスト
         self.display_tasks: List[Dict] = []
-        
-        # 改修要望関連
-        self.improvements: List[Dict] = []
         
         self.show_task_selection_dialog()
     
@@ -275,12 +220,7 @@ class TaskManagerApp:
                  command=self.proceed_to_selection,
                  font=tkfont.Font(family=FONT_FAMILY, size=11, weight="bold"), 
                  bg=PRIMARY_COLOR, fg="white",
-                 padx=25, pady=12).pack(side=tk.LEFT, padx=5)
-        
-        tk.Button(proceed_frame, text="改修要望", 
-                 command=self.show_improvement_dialog,
-                 font=tkfont.Font(family=FONT_FAMILY, size=11), 
-                 padx=15, pady=12).pack(side=tk.LEFT, padx=5)
+                 padx=25, pady=12).pack()
         
         # ステータスバー
         self.status_label = tk.Label(
@@ -290,6 +230,17 @@ class TaskManagerApp:
             font=tkfont.Font(family=FONT_FAMILY, size=9)
         )
         self.status_label.pack(side=tk.BOTTOM, fill=tk.X)
+        
+        # 改修要望ボタン（右下）
+        improvement_button = tk.Button(
+            self.root,
+            text="要望",
+            command=self.improvement_manager.show_management_window,
+            font=tkfont.Font(family=FONT_FAMILY, size=8),
+            width=6, height=1,
+            relief=tk.FLAT
+        )
+        improvement_button.pack(side=tk.BOTTOM, anchor=tk.SE, padx=5, pady=2)
     
     def get_priority_color(self, priority: str) -> str:
         """優先度に応じた背景色を返す"""
@@ -370,10 +321,6 @@ class TaskManagerApp:
             
             if self.status_label:
                 self.status_label.config(text=f"完了: {task['text']}")
-                self.save_tasks()
-                
-                if self.status_label:
-                    self.status_label.config(text=f"完了: {task['text']}")
     
     def clear_all(self) -> None:
         """全タスク削除"""
@@ -627,210 +574,11 @@ class TaskManagerApp:
         completion.bind('<Left>', move_dialog_focus)
         completion.bind('<Right>', move_dialog_focus)
     
-    def show_improvement_dialog(self) -> None:
-        """改修要望ダイアログ表示"""
-        dialog = tk.Toplevel(self.root)
-        dialog.title("改修要望管理")
-        dialog.geometry("600x500")
-        
-        self.bring_to_front(dialog)
-        
-        # タイトル
-        tk.Label(dialog, text="改修要望管理", 
-                font=tkfont.Font(family=FONT_FAMILY, size=14, weight="bold")).pack(pady=10)
-        
-        # 新規作成ボタン
-        tk.Button(dialog, text="新規改修要望作成", 
-                 command=lambda: self.show_create_improvement_dialog(dialog),
-                 font=tkfont.Font(family=FONT_FAMILY, size=10),
-                 bg=PRIMARY_COLOR, fg="white").pack(pady=5)
-        
-        # 要望一覧
-        list_frame = tk.Frame(dialog)
-        list_frame.pack(pady=10, padx=20, fill=tk.BOTH, expand=True)
-        
-        scrollbar = tk.Scrollbar(list_frame)
-        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        listbox = tk.Listbox(list_frame, font=tkfont.Font(family=FONT_FAMILY, size=9), height=15)
-        listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        scrollbar.config(command=listbox.yview)
-        
-        # 要望データを表示
-        for i, imp in enumerate(self.improvements):
-            status = "✓" if imp.get("completed", False) else "□"
-            title = imp.get("title", "無題")
-            created = imp.get("created", "")
-            display_text = f"{status} {title} ({created})"
-            listbox.insert(tk.END, display_text)
-        
-        # ボタンフレーム
-        btn_frame = tk.Frame(dialog)
-        btn_frame.pack(pady=10)
-        
-        def edit_selected():
-            sel = listbox.curselection()
-            if sel:
-                improvement = self.improvements[sel[0]]
-                self.show_edit_improvement_dialog(dialog, improvement)
-        
-        def delete_selected():
-            sel = listbox.curselection()
-            if sel and messagebox.askyesno("確認", "この改修要望を削除しますか？"):
-                del self.improvements[sel[0]]
-                self.save_improvements()
-                dialog.destroy()
-                self.show_improvement_dialog()
-        
-        tk.Button(btn_frame, text="編集", command=edit_selected,
-                 font=tkfont.Font(family=FONT_FAMILY, size=9)).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="削除", command=delete_selected,
-                 font=tkfont.Font(family=FONT_FAMILY, size=9)).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="閉じる", command=dialog.destroy,
-                 font=tkfont.Font(family=FONT_FAMILY, size=9)).pack(side=tk.LEFT, padx=5)
-    
-    def show_create_improvement_dialog(self, parent_dialog: tk.Toplevel) -> None:
-        """改修要望作成ダイアログ"""
-        create_dialog = tk.Toplevel(parent_dialog)
-        create_dialog.title("新規改修要望作成")
-        create_dialog.geometry("500x400")
-        
-        self.bring_to_front(create_dialog)
-        
-        tk.Label(create_dialog, text="改修要望作成", 
-                font=tkfont.Font(family=FONT_FAMILY, size=12, weight="bold")).pack(pady=10)
-        
-        # タイトル入力
-        tk.Label(create_dialog, text="タイトル:", 
-                font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(anchor='w', padx=20)
-        title_entry = tk.Entry(create_dialog, width=50, 
-                              font=tkfont.Font(family=FONT_FAMILY, size=10))
-        title_entry.pack(pady=5, padx=20, fill=tk.X)
-        title_entry.focus()
-        
-        # 詳細入力
-        tk.Label(create_dialog, text="詳細:", 
-                font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(anchor='w', padx=20)
-        detail_text = tk.Text(create_dialog, height=8, width=50, 
-                             font=tkfont.Font(family=FONT_FAMILY, size=9))
-        detail_text.pack(pady=5, padx=20, fill=tk.BOTH, expand=True)
-        
-        def save_improvement():
-            title = title_entry.get().strip()
-            detail = detail_text.get("1.0", tk.END).strip()
-            
-            if title:
-                improvement = {
-                    "title": title,
-                    "detail": detail,
-                    "completed": False,
-                    "created": datetime.now().strftime("%Y-%m-%d %H:%M")
-                }
-                self.improvements.append(improvement)
-                self.save_improvements()
-                create_dialog.destroy()
-                parent_dialog.destroy()
-                self.show_improvement_dialog()
-            else:
-                messagebox.showwarning("警告", "タイトルを入力してください")
-        
-        btn_frame = tk.Frame(create_dialog)
-        btn_frame.pack(pady=10)
-        
-        tk.Button(btn_frame, text="保存", command=save_improvement,
-                 font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="キャンセル", command=create_dialog.destroy,
-                 font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(side=tk.LEFT, padx=5)
-    
-    def show_edit_improvement_dialog(self, parent_dialog: tk.Toplevel, improvement: Dict) -> None:
-        """改修要望編集ダイアログ"""
-        edit_dialog = tk.Toplevel(parent_dialog)
-        edit_dialog.title("改修要望編集")
-        edit_dialog.geometry("500x400")
-        
-        self.bring_to_front(edit_dialog)
-        
-        tk.Label(edit_dialog, text="改修要望編集", 
-                font=tkfont.Font(family=FONT_FAMILY, size=12, weight="bold")).pack(pady=10)
-        
-        # タイトル入力
-        tk.Label(edit_dialog, text="タイトル:", 
-                font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(anchor='w', padx=20)
-        title_entry = tk.Entry(edit_dialog, width=50, 
-                              font=tkfont.Font(family=FONT_FAMILY, size=10))
-        title_entry.insert(0, improvement.get("title", ""))
-        title_entry.pack(pady=5, padx=20, fill=tk.X)
-        
-        # 詳細入力
-        tk.Label(edit_dialog, text="詳細:", 
-                font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(anchor='w', padx=20)
-        detail_text = tk.Text(edit_dialog, height=8, width=50, 
-                             font=tkfont.Font(family=FONT_FAMILY, size=9))
-        detail_text.insert("1.0", improvement.get("detail", ""))
-        detail_text.pack(pady=5, padx=20, fill=tk.BOTH, expand=True)
-        
-        # 完了チェック
-        completed_var = tk.BooleanVar(value=improvement.get("completed", False))
-        tk.Checkbutton(edit_dialog, text="完了", variable=completed_var,
-                      font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(pady=5)
-        
-        def update_improvement():
-            title = title_entry.get().strip()
-            detail = detail_text.get("1.0", tk.END).strip()
-            
-            if title:
-                improvement.update({
-                    "title": title,
-                    "detail": detail,
-                    "completed": completed_var.get()
-                })
-                self.save_improvements()
-                edit_dialog.destroy()
-                parent_dialog.destroy()
-                self.show_improvement_dialog()
-            else:
-                messagebox.showwarning("警告", "タイトルを入力してください")
-        
-        btn_frame = tk.Frame(edit_dialog)
-        btn_frame.pack(pady=10)
-        
-        tk.Button(btn_frame, text="更新", command=update_improvement,
-                 font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(side=tk.LEFT, padx=5)
-        tk.Button(btn_frame, text="キャンセル", command=edit_dialog.destroy,
-                 font=tkfont.Font(family=FONT_FAMILY, size=10)).pack(side=tk.LEFT, padx=5)
-    
-    def save_improvements(self) -> None:
-        """改修要望保存"""
-        try:
-            with open(self.data_file, "w", encoding="utf-8") as f:
-                data = {
-                    "tasks": self.tasks,
-                    "improvements": self.improvements
-                }
-                json.dump(data, f, ensure_ascii=False, indent=2)
-        except IOError as e:
-            messagebox.showerror("保存エラー", f"改修要望の保存に失敗:\n{e}")
-    
-    def load_improvements(self) -> None:
-        """改修要望読み込み"""
-        if self.data_file.exists():
-            try:
-                with open(self.data_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.improvements = data.get("improvements", [])
-            except (json.JSONDecodeError, IOError) as e:
-                print(f"読み込みエラー: {e}")
-                self.improvements = []
-    
     def save_tasks(self) -> None:
         """タスク保存"""
         try:
             with open(self.data_file, "w", encoding="utf-8") as f:
-                data = {
-                    "tasks": self.tasks,
-                    "improvements": self.improvements
-                }
-                json.dump(data, f, ensure_ascii=False, indent=2)
+                json.dump(self.tasks, f, ensure_ascii=False, indent=2)
         except IOError as e:
             messagebox.showerror("保存エラー", f"タスクの保存に失敗:\n{e}")
     
@@ -839,9 +587,7 @@ class TaskManagerApp:
         if self.data_file.exists():
             try:
                 with open(self.data_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    self.tasks = data.get("tasks", [])
-                    self.improvements = data.get("improvements", [])
+                    self.tasks = json.load(f)
                     # 古いデータに優先度追加
                     for task in self.tasks:
                         if "priority" not in task:
@@ -851,7 +597,6 @@ class TaskManagerApp:
                 messagebox.showwarning("読み込みエラー", 
                     "タスクファイルが破損しています。新規作成します。")
                 self.tasks = []
-                self.improvements = []
 
 
 if __name__ == "__main__":
