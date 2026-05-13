@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional
 import uuid
-from constants import FONT_FAMILY, PRIMARY_COLOR, COLOR_HIGH, COLOR_MEDIUM, COLOR_LOW
+from constants import APP_DATA_DIR, FONT_FAMILY, PRIMARY_COLOR, COLOR_HIGH, COLOR_MEDIUM, COLOR_LOW
 
 
 class ImprovementRequestManager:
@@ -15,7 +15,7 @@ class ImprovementRequestManager:
         self.parent = parent_window
         self.mode = mode
         filename = "improvement_requests_test.json" if mode == "test" else "improvement_requests.json"
-        self.data_file = Path.home() / filename
+        self.data_file = APP_DATA_DIR / filename
         self.requests: List[Dict] = []
         self.load_requests()
     
