@@ -3,9 +3,8 @@
 Built with AI / Vibe Coding
 
 ## ディレクトリ構成
-
+```
 30MIN-TASK-TIMER/
-│
 ├── README.md              # プロジェクトの説明書
 ├── requirements.txt       # 依存ライブラリのリスト
 ├── .gitignore             # git管理外ファイルのリスト
@@ -43,3 +42,4 @@ Built with AI / Vibe Coding
 └── tests/                 # テストコード
     ├── __init__.py
     └── test_models.py
+```
