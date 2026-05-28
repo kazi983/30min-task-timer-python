@@ -127,6 +127,17 @@ class TaskSelectWindow(tk.Toplevel):
             padx=5,
         )
 
+        # ========================
+        # bind
+        # ========================
+        self.task_tree.bind("<Return>", self._on_enter)
+        self.snooze_button.bind("<Return>", self._on_enter)
+        self.decide_button.bind("<Return>", self._on_enter)
+
+        self.bind("<Escape>", self._on_escape)
+
+        self.task_tree.bind("<Double-1>", self._on_double_click)
+
         self.display_tasks: list[Task] = []
 
     def update_task_list(
@@ -185,3 +196,30 @@ class TaskSelectWindow(tk.Toplevel):
         index = int(item_id)
 
         return self.display_tasks[index]
+
+    def _on_tree_activate(self):
+        self.decide_button.invoke()
+
+    def _on_snooze_activate(self):
+        self.snooze_button.invoke()
+
+    def _on_decide_activate(self):
+        self.decide_button.invoke()
+
+    def _on_enter(self, event=None) -> None:
+        widget = self.focus_get()
+
+        if widget == self.task_tree:
+            self._on_tree_activate()
+
+        elif widget == self.snooze_button:
+            self._on_snooze_activate()
+
+        elif widget == self.decide_button:
+            self._on_decide_activate()
+
+    def _on_escape(self, event=None) -> None:
+        self._on_snooze_activate()
+
+    def _on_double_click(self, event=None) -> None:
+        self._on_decide_activate()
