@@ -18,6 +18,10 @@ class TaskSelectWindow(tk.Toplevel):
 
         self.attributes("-topmost", True)
 
+        self.lift()
+
+        self.focus_force()
+
         self.title("タスク選択")
 
         self.geometry("500x600")
@@ -142,12 +146,14 @@ class TaskSelectWindow(tk.Toplevel):
                 background=color,
             )
 
+        selected_item_id = None
         for index, task in enumerate(tasks):
+            iid_str = str(index)
 
             self.task_tree.insert(
                 "",
                 tk.END,
-                iid=str(index),
+                iid=iid_str,
                 values=(
                     task.priority,
                     task.text,
@@ -155,6 +161,17 @@ class TaskSelectWindow(tk.Toplevel):
                 ),
                 tags=(task.priority,),
             )
+            if selected_item_id is None and task.last_selected:
+                selected_item_id = iid_str
+
+        if selected_item_id is None:
+            selected_item_id = "0"
+
+        self.task_tree.selection_set(selected_item_id)
+        self.task_tree.focus(selected_item_id)
+        self.task_tree.see(selected_item_id)
+
+        self.task_tree.focus_set()
 
     def get_selected_task(self) -> Task | None:
 
