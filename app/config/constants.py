@@ -1,0 +1,22 @@
+# 色定数
+COLOR_HIGH = "#ffcdd2"
+COLOR_MEDIUM = "#fff9c4"
+COLOR_LOW = "#e8f5e9"
+COLOR_NONE = "#ffffff"
+PRIORITY_COLORS = {
+    "高": COLOR_HIGH,
+    "中": COLOR_MEDIUM,
+    "低": COLOR_LOW,
+    "なし": COLOR_NONE,
+}
+
+PRIMARY_COLOR = "#4CAF50"
+
+# ウィンドウサイズ
+WINDOW_WIDTH = 700
+WINDOW_HEIGHT = 700
+MAIN_WINDOW_WIDTH = 400
+MAIN_WINDOW_HEIGHT = 500
+
+# フォント（Segoe UI統一）
+FONT_FAMILY = "Meiryo"
