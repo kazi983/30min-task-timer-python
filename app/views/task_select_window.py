@@ -167,7 +167,7 @@ class TaskSelectWindow(tk.Toplevel):
                 iid=iid_str,
                 values=(
                     task.priority,
-                    task.text,
+                    task.name,
                     task.created,
                 ),
                 tags=(task.priority,),
