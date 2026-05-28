@@ -2,10 +2,10 @@
 
 import tkinter as tk
 from tkinter import ttk
-import tkinter.font as tkfont
 
 from app.models.task import Task
 import app.config.constants as c
+
 
 class TaskSelectWindow(tk.Toplevel):
 
@@ -15,6 +15,8 @@ class TaskSelectWindow(tk.Toplevel):
     ) -> None:
 
         super().__init__(root)
+
+        self.attributes("-topmost", True)
 
         self.title("タスク選択")
 
@@ -30,11 +32,7 @@ class TaskSelectWindow(tk.Toplevel):
         # Treeview
         # ========================
 
-        columns = (
-            "priority",
-            "text",
-            "created"
-        )
+        columns = ("priority", "text", "created")
 
         self.task_tree = ttk.Treeview(
             self,
@@ -48,10 +46,7 @@ class TaskSelectWindow(tk.Toplevel):
             text="優先度",
         )
 
-        self.task_tree.heading(
-            "text",
-            text="タスク"
-        )
+        self.task_tree.heading("text", text="タスク")
 
         self.task_tree.heading(
             "created",
@@ -140,10 +135,8 @@ class TaskSelectWindow(tk.Toplevel):
 
         self.display_tasks = tasks
 
-        for priority, color in (
-            c.PRIORITY_COLORS.items()
-        ):
-            
+        for priority, color in c.PRIORITY_COLORS.items():
+
             self.task_tree.tag_configure(
                 priority,
                 background=color,
@@ -161,7 +154,6 @@ class TaskSelectWindow(tk.Toplevel):
                     task.created,
                 ),
                 tags=(task.priority,),
-                
             )
 
     def get_selected_task(self) -> Task | None:
@@ -176,4 +168,3 @@ class TaskSelectWindow(tk.Toplevel):
         index = int(item_id)
 
         return self.display_tasks[index]
-    
