@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+
 @dataclass
 class Task:
-    text: str
-    completed: bool
+    name: str
+    completed: bool = False
     priority: str = "なし"
     created: str = ""
     last_selected: bool = False
