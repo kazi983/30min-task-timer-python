@@ -131,7 +131,10 @@ class TaskSelectWindow(tk.Toplevel):
         # bind
         # ========================
         self.task_tree.bind("<Return>", self._on_enter)
+        self.task_tree.bind("<BackSpace>", self._on_backspace)
+
         self.snooze_button.bind("<Return>", self._on_enter)
+
         self.decide_button.bind("<Return>", self._on_enter)
 
         self.bind("<Escape>", self._on_escape)
@@ -223,3 +226,9 @@ class TaskSelectWindow(tk.Toplevel):
 
     def _on_double_click(self, event=None) -> None:
         self._on_decide_activate()
+
+    def _on_backspace(self, event=None) -> None:
+        self.complete_callback()
+
+    def set_complete_callback(self, callback):
+        self.complete_callback = callback

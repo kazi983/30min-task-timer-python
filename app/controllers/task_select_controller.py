@@ -35,6 +35,8 @@ class TaskSelectController:
             command=self.on_decide_click,
         )
 
+        self.window.set_complete_callback(self.on_complete_task)
+
     def refresh_task_list(self) -> None:
 
         tasks = self.task_manager.get_incomplete_tasks()
@@ -65,7 +67,7 @@ class TaskSelectController:
         if selected_task:
 
             if not messagebox.askokcancel(
-                "選択完了", f"{selected_task.text} を開始しますか？", parent=self.window
+                "選択完了", f"{selected_task.name} を開始しますか？", parent=self.window
             ):
                 return
 
@@ -77,3 +79,22 @@ class TaskSelectController:
             c.TIME_MS_INTERVAL,
             self.reopen_callback,
         )
+
+    def on_complete_task(self) -> None:
+        task = self.window.get_selected_task()
+
+        if not task:
+            return
+
+        if selected_task:
+
+            if not messagebox.askokcancel(
+                "完了登録",
+                f"{selected_task.name} を完了済みタスクに登録します。",
+                parent=self.window,
+            ):
+                return
+
+        self.task_manager.complete_task(task)
+
+        self.refresh_task_list()

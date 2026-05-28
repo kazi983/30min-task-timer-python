@@ -50,7 +50,12 @@ class TaskManager:
     def save_tasks(self) -> None:
         try:
             with open(self.data_file, "w", encoding="utf-8") as f:
-                json.dump(self.tasks, f, ensure_ascii=False, indent=2)
+                json.dump(
+                    [task.to_dict() for task in self.tasks],
+                    f,
+                    ensure_ascii=False,
+                    indent=2,
+                )
         except IOError as error:
 
             raise IOError(f"タスクの保存に失敗: {error}") from error
@@ -64,19 +69,7 @@ class TaskManager:
             with open(self.data_file, "r", encoding="utf-8") as file:
                 json_tasks = json.load(file)
 
-            self.tasks = []
-
-            for task_date in json_tasks:
-
-                task = Task(
-                    name=task_date["text"],
-                    completed=task_date.get("completed", "なし"),
-                    priority=task_date.get("priority", "なし"),
-                    created=task_date.get("created", ""),
-                    last_selected=task_date.get("last_selected", False),
-                )
-
-                self.tasks.append(task)
+            self.tasks = [Task.from_dict(task_data) for task_data in json_tasks]
 
         except (json.JSONDecodeError, IOError) as error:
             raise RuntimeError(f"読み込みエラー: {error}")
