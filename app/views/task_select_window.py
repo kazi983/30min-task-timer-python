@@ -103,12 +103,14 @@ class TaskSelectWindow(tk.Toplevel):
         # buttons
         # ========================
 
-        button_frame = ttk.Frame(self)
+        button_frame_main = ttk.Frame(self)
+        button_frame_sub = ttk.Frame(self)
 
-        button_frame.pack(pady=10)
+        button_frame_main.pack(pady=10, before=self.task_tree)
+        button_frame_sub.pack(pady=10)
 
         self.snooze_button = ttk.Button(
-            button_frame,
+            button_frame_sub,
             text="5分後再通知",
         )
 
@@ -118,11 +120,21 @@ class TaskSelectWindow(tk.Toplevel):
         )
 
         self.decide_button = ttk.Button(
-            button_frame,
+            button_frame_main,
             text="決定",
         )
 
         self.decide_button.pack(
+            side=tk.LEFT,
+            padx=30,
+        )
+
+        self.forward_manager_button = ttk.Button(
+            button_frame_sub,
+            text="管理画面",
+        )
+
+        self.forward_manager_button.pack(
             side=tk.LEFT,
             padx=5,
         )
