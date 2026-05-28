@@ -91,6 +91,10 @@ class AppController:
 
     def exit_app(self) -> None:
 
+        self.root.after(0, self._shutdown)
+
+    def _shutdown(self) -> None:
+
         self.root.quit()
 
         self.root.destroy()
