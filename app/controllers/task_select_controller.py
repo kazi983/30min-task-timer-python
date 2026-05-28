@@ -81,20 +81,20 @@ class TaskSelectController:
         )
 
     def on_complete_task(self) -> None:
-        task = self.window.get_selected_task()
+        selected_task = self.window.get_selected_task()
 
-        if not task:
+        if not selected_task:
             return
 
         if selected_task:
 
             if not messagebox.askokcancel(
-                "完了登録",
-                f"{selected_task.name} を完了済みタスクに登録します。",
+                "タスク完了",
+                f"{selected_task.name} を完了済みタスクに登録しますか？",
                 parent=self.window,
             ):
                 return
 
-        self.task_manager.complete_task(task)
+        self.task_manager.complete_task(selected_task)
 
         self.refresh_task_list()
