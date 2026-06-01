@@ -1,32 +1,32 @@
 """
-app/controllers/task_selection_controller.py
+app/controllers/task_picker_controller.py
 
-Task selection controller module.
+Task picker controller module.
 
-This controller manages the task selection UI flow, including:
+This controller manages the task picker UI flow, including:
 - Displaying incomplete tasks
-- Handling task selection and confirmation
-- Snooze functionality (delayed reopening of selection window)
+- Handling task picker and confirmation
+- Snooze functionality (delayed reopening of picker window)
 - Navigation to task management screen
 
-It coordinates between TaskSelectionWindow, TaskManager, and TimerManager.
+It coordinates between TaskPickerView, TaskService, and TimerService.
 """
 
 from tkinter import messagebox
 
 import app.config.constants as c
-from app.views.task_selection_window import TaskSelectionWindow
-from app.models.task_manager import TaskManager
+from app.views.task_picker_view import TaskPickerView
+from app.models.task_service import TaskService
 
 
-class TaskSelectionController:
+class TaskPickerController:
     """
-    Controller for task selection screen.
+    Controller for task picker screen.
 
     Responsibilities:
-    - Manage task selection UI interactions
+    - Manage task picker UI interactions
     - Handle user decisions (select, complete, snooze, navigate)
-    - Coordinate TaskManager and TimerManager operations
+    - Coordinate TaskService and TimerService operations
     - Control navigation between application windows
 
     This class contains application flow logic and user interaction handling.
@@ -34,26 +34,26 @@ class TaskSelectionController:
 
     def __init__(
         self,
-        window: TaskSelectionWindow,
-        task_manager: TaskManager,
-        timer_manager,
+        window: TaskPickerView,
+        task_service: TaskService,
+        timer_service,
         reopen_callback,
-        open_task_manager_callback,
+        open_task_management_callback,
     ) -> None:
 
         self.window = window
 
-        self.task_manager = task_manager
+        self.task_service = task_service
 
-        self.timer_manager = timer_manager
+        self.timer_service = timer_service
 
         self.reopen_callback = reopen_callback
-        self.open_task_manager_callback = open_task_manager_callback
+        self.open_task_management_callback = open_task_management_callback
 
         self.refresh_task_list()
 
-        self.window.task_manager_button.config(
-            command=self.on_open_task_manager_button,
+        self.window.task_management_button.config(
+            command=self.on_open_task_management_button,
         )
 
         self.window.snooze_button.config(
@@ -61,30 +61,30 @@ class TaskSelectionController:
         )
 
         self.window.confirm_button.config(
-            command=self.on_decide_click,
+            command=self.on_confirm_click,
         )
 
         self.window.set_complete_callback(self.on_complete_task)
 
     def refresh_task_list(self) -> None:
         """
-        Refresh the task list in the selection window.
+        Refresh the task list in the picker view.
 
-        Loads incomplete tasks from TaskManager and updates the UI.
+        Loads incomplete tasks from TaskService and updates the UI.
         """
 
-        tasks = self.task_manager.get_incomplete_tasks()
+        tasks = self.task_service.get_incomplete_tasks()
 
         self.window.update_task_list(tasks)
 
-    def on_open_task_manager_button(self) -> None:
+    def on_open_task_management_button(self) -> None:
         """
-        Close selection window and open task manager window.
+        Close picker window and open task management view.
         """
 
         self.window.destroy()
 
-        self.open_task_manager_callback()
+        self.open_task_management_callback()
 
     def on_snooze_click(self) -> None:
         """
@@ -93,14 +93,14 @@ class TaskSelectionController:
 
         self.window.destroy()
 
-        self.timer_manager.set_timeout(
+        self.timer_service.schedule(
             c.TIME_MS_SNOOZE,
             self.reopen_callback,
         )
 
-    def on_decide_click(self) -> None:
+    def on_confirm_click(self) -> None:
         """
-        Confirm task selection and mark it as last selected.
+        Confirm task picker and mark it as last selected.
 
         If confirmed, the window is closed and will reopen after a delay.
         """
@@ -122,11 +122,11 @@ class TaskSelectionController:
             ):
                 return
 
-        self.task_manager.mark_task_as_last_selected(selected_task)
+        self.task_service.mark_task_as_last_selected(selected_task)
 
         self.window.destroy()
 
-        self.timer_manager.set_timeout(
+        self.timer_service.schedule(
             c.TIME_MS_INTERVAL,
             self.reopen_callback,
         )
@@ -150,6 +150,6 @@ class TaskSelectionController:
             ):
                 return
 
-        self.task_manager.set_task_as_complete(selected_task)
+        self.task_service.mark_task_as_complete(selected_task)
 
         self.refresh_task_list()

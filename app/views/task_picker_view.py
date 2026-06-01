@@ -1,4 +1,4 @@
-# app/views/task_selection_window.py
+# app/views/task_picker_view.py
 
 import tkinter as tk
 from tkinter import ttk
@@ -8,12 +8,12 @@ import app.config.constants as c
 from collections.abc import Callable
 
 
-class TaskSelectionWindow(tk.Toplevel):
+class TaskPickerView(tk.Toplevel):
     """
-    A task selection window that displays a list of tasks and allows the user
+    A task picker view that displays a list of tasks and allows the user
     to select, complete, delete, or snooze tasks.
 
-    This window uses a Treeview to present task information such as priority,
+    This view uses a Treeview to present task information such as priority,
     name, and creation date. It supports keyboard and mouse interactions and
     delegates task actions (complete/delete) via callbacks provided by the
     controller.
@@ -26,7 +26,7 @@ class TaskSelectionWindow(tk.Toplevel):
 
         super().__init__(root)
 
-        self._setup_window(
+        self._setup_view(
             title="タスク選択", geometry=f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}"
         )
 
@@ -146,12 +146,12 @@ class TaskSelectionWindow(tk.Toplevel):
             padx=30,
         )
 
-        self.task_manager_button = ttk.Button(
+        self.task_management_button = ttk.Button(
             button_frame_sub,
             text="管理画面",
         )
 
-        self.task_manager_button.pack(
+        self.task_management_button.pack(
             side=tk.LEFT,
             padx=5,
         )
@@ -290,7 +290,7 @@ class TaskSelectionWindow(tk.Toplevel):
         if self.on_delete_task:
             self.on_delete_task()
 
-    def _setup_window(self, title: str, geometry: str) -> None:
+    def _setup_view(self, title: str, geometry: str) -> None:
         self.attributes("-topmost", True)
         self.lift()
         self.focus_force()

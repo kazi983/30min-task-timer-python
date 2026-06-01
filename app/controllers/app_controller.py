@@ -5,7 +5,7 @@ Application controller module.
 
 This module defines AppController, which is responsible for:
 - Initializing core application services (TaskManager, TimerManager)
-- Managing application windows (task selection / task manager)
+- Managing application windows (task picker / task management)
 - Handling application lifecycle (restart, exit)
 - Integrating system tray operations
 """
@@ -17,16 +17,16 @@ import tkinter.font as tkfont
 
 from pathlib import Path
 
-from app.models.task_manager import TaskManager
+from app.models.task_service import TaskService
 
-from app.models.timer_manager import TimerManager
+from app.models.timer_service import TimerService
 
-from app.views.task_selection_window import TaskSelectionWindow
-from app.views.task_manager_window import TaskManagerWindow
+from app.views.task_picker_view import TaskPickerView
+from app.views.task_management_view import TaskManagementView
 
-from app.controllers.task_selection_controller import TaskSelectionController
+from app.controllers.task_picker_controller import TaskPickerController
 
-from app.controllers.task_manager_controller import TaskManagerController
+from app.controllers.task_management_controller import TaskManagementController
 
 from app.config.paths import TASK_DATA_FILE
 
@@ -63,14 +63,14 @@ class AppController:
 
         self.tray_manager.run()
 
-        self.task_manager = TaskManager(Path(TASK_DATA_FILE))
+        self.task_service = TaskService(Path(TASK_DATA_FILE))
 
-        self.timer_manager = TimerManager(
+        self.timer_service = TimerService(
             root,
         )
 
-        self.task_selection_window = None
-        self.task_manager_window = None
+        self.task_picker_view = None
+        self.task_management_view = None
 
         default_font = tkfont.nametofont("TkDefaultFont")
 
@@ -84,48 +84,48 @@ class AppController:
         Start the application by opening the initial window.
         """
 
-        self.open_task_selection_window()
+        self.open_task_picker_view()
 
-    def open_task_selection_window(self) -> None:
+    def open_task_picker_view(self) -> None:
         """
-        Open the task selection window.
+        Open the task picker view.
 
         If an existing window is open, it will be destroyed and replaced.
         """
 
-        if self.task_selection_window:
-            self.task_selection_window.destroy()
+        if self.task_picker_view:
+            self.task_picker_view.destroy()
 
-        self.task_selection_window = TaskSelectionWindow(
+        self.task_picker_view = TaskPickerView(
             root=self.root,
         )
 
-        TaskSelectionController(
-            window=self.task_selection_window,
-            task_manager=self.task_manager,
-            timer_manager=self.timer_manager,
-            reopen_callback=self.open_task_selection_window,
-            open_task_manager_callback=self.open_task_manager_window,
+        TaskPickerController(
+            window=self.task_picker_view,
+            task_service=self.task_service,
+            timer_service=self.timer_service,
+            reopen_callback=self.open_task_picker_view,
+            open_task_management_callback=self.open_task_management_view,
         )
 
-    def open_task_manager_window(self) -> None:
+    def open_task_management_view(self) -> None:
         """
-        Open the task manager window.
+        Open the task management view.
 
         If an existing window is open, it will be destroyed and replaced.
         """
 
-        if self.task_manager_window:
-            self.task_manager_window.destroy()
+        if self.task_management_view:
+            self.task_management_view.destroy()
 
-        self.task_manager_window = TaskManagerWindow(
+        self.task_management_view = TaskManagementView(
             root=self.root,
         )
 
-        TaskManagerController(
-            window=self.task_manager_window,
-            task_manager=self.task_manager,
-            open_task_selection_callback=self.open_task_selection_window,
+        TaskManagementController(
+            window=self.task_management_view,
+            task_service=self.task_service,
+            open_task_picker_callback=self.open_task_picker_view,
         )
 
     def restart_app(self) -> None:

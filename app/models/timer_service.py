@@ -1,13 +1,14 @@
 """
-app/models/timer_manager.py
+app/models/timer_service.py
 """
+
 from __future__ import annotations
 
 import tkinter as tk
 from collections.abc import Callable
 
 
-class TimerManager:
+class TimerService:
     """
     A simple timer utility wrapper for Tkinter's after() method.
 

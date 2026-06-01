@@ -1,9 +1,9 @@
 """
-app/models/task_manager.py
+app/models/task_service.py
 
 Task management service layer.
 
-This module provides TaskManager, which is responsible for:
+This module provides TaskService, which is responsible for:
 - Creating, editing, completing, and deleting tasks
 - Persisting tasks to a JSON file
 - Loading tasks from persistent storage
@@ -22,7 +22,7 @@ from app.models.task import Task
 import uuid
 
 
-class TaskManager:
+class TaskService:
     """
     Manages application tasks and handles persistence to a JSON file.
 
@@ -85,7 +85,7 @@ class TaskManager:
 
         self.save_tasks()
 
-    def set_task_as_complete(self, task: Task) -> None:
+    def mark_task_as_complete(self, task: Task) -> None:
         """
         Mark a task as completed.
 
@@ -96,7 +96,7 @@ class TaskManager:
 
         self.save_tasks()
 
-    def set_task_as_delete(self, task: Task) -> None:
+    def mark_task_as_delete(self, task: Task) -> None:
         """
         Mark a task as deleted (soft delete).
 
@@ -105,6 +105,18 @@ class TaskManager:
         """
 
         task.deleted = True
+
+        self.save_tasks()
+
+    def mark_task_as_last_selected(self, task: Task) -> None:
+        """
+        Mark a task as last selected.
+
+        Args:
+            task: Task to mark as last selected.
+        """
+
+        task.last_selected = True
 
         self.save_tasks()
 

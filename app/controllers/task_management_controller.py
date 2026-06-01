@@ -1,10 +1,10 @@
 """
-app/controllers/task_manager_controller.py
+app/controllers/task_management_controller.py
 
-Task manager controller module.
+task management controller module.
 
-This controller connects TaskManager (service layer) with
-TaskManagerWindow (view), handling user interactions such as
+This controller connects TaskService (service layer) with
+TaskManagementView (view), handling user interactions such as
 adding, editing, completing, and deleting tasks.
 
 It acts as a mediator between UI events and application business logic.
@@ -13,17 +13,17 @@ It acts as a mediator between UI events and application business logic.
 from tkinter import messagebox
 
 import app.config.constants as c
-from app.views.task_manager_window import TaskManagerWindow
-from app.models.task_manager import TaskManager
+from app.views.task_management_view import TaskManagementView
+from app.models.task_service import TaskService
 
 
-class TaskManagerController:
+class TaskManagementController:
     """
     Controller for task management UI.
 
     Responsibilities:
-    - Handle user actions from TaskManagerWindow
-    - Invoke TaskManager service methods
+    - Handle user actions from TaskManagementView
+    - Invoke TaskService service methods
     - Update UI state after data changes
     - Display confirmation and warning dialogs
 
@@ -32,16 +32,16 @@ class TaskManagerController:
 
     def __init__(
         self,
-        window: TaskManagerWindow,
-        task_manager: TaskManager,
-        open_task_selection_callback,
+        window: TaskManagementView,
+        task_service: TaskService,
+        open_task_picker_callback,
     ) -> None:
 
         self.window = window
 
-        self.task_manager = task_manager
+        self.task_service = task_service
 
-        self.open_task_selection_callback = open_task_selection_callback
+        self.open_task_picker_callback = open_task_picker_callback
 
         self.refresh_task_list()
 
@@ -54,7 +54,7 @@ class TaskManagerController:
         )
 
         self.window.back_button.config(
-            command=self.on_open_task_selection_button,
+            command=self.on_open_task_picker_button,
         )
 
         self.window.set_complete_callback(self.on_complete_task)
@@ -64,21 +64,21 @@ class TaskManagerController:
         """
         Refresh the task list displayed in the UI.
 
-        Fetches incomplete tasks from TaskManager and updates the view.
+        Fetches incomplete tasks from TaskService and updates the view.
         """
 
-        tasks = self.task_manager.get_incomplete_tasks()
+        tasks = self.task_service.get_incomplete_tasks()
 
         self.window.update_task_list(tasks)
 
-    def on_open_task_selection_button(self) -> None:
+    def on_open_task_picker_button(self) -> None:
         """
-        Close current window and return to task selection screen.
+        Close current window and return to task picker screen.
         """
 
         self.window.destroy()
 
-        self.open_task_selection_callback()
+        self.open_task_picker_callback()
 
     def on_add_task_click(self) -> None:
         """
@@ -97,7 +97,7 @@ class TaskManagerController:
 
             return
 
-        self.task_manager.add_task(input_value["name"], input_value["priority"])
+        self.task_service.add_task(input_value["name"], input_value["priority"])
 
         self.refresh_task_list()
 
@@ -137,7 +137,7 @@ class TaskManagerController:
             ):
                 return
 
-        self.task_manager.edit_task(
+        self.task_service.edit_task(
             selected_task, input_value["name"], input_value["priority"]
         )
 
@@ -162,7 +162,7 @@ class TaskManagerController:
             ):
                 return
 
-        self.task_manager.set_task_as_complete(selected_task)
+        self.task_service.mark_task_as_complete(selected_task)
 
         self.refresh_task_list()
 
@@ -185,6 +185,6 @@ class TaskManagerController:
             ):
                 return
 
-        self.task_manager.set_task_as_delete(selected_task)
+        self.task_service.mark_task_as_delete(selected_task)
 
         self.refresh_task_list()

@@ -1,5 +1,5 @@
 """
-app/views/task_manager_window.py
+app/views/task_management_view.py
 """
 
 import tkinter as tk
@@ -10,9 +10,9 @@ import app.config.constants as c
 from collections.abc import Callable
 
 
-class TaskManagerWindow(tk.Toplevel):
+class TaskManagementView(tk.Toplevel):
     """
-    Task management UI window built with Tkinter.
+    Task management UI view built with Tkinter.
 
     Responsibilities:
     - Present a list of tasks using a Treeview
@@ -29,7 +29,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         super().__init__(root)
 
-        self._setup_window(
+        self._setup_view(
             title="タスク管理", geometry=f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}"
         )
 
@@ -315,7 +315,7 @@ class TaskManagerWindow(tk.Toplevel):
     def _on_edit_activate(self):
         self.edit_button.invoke()
 
-    def _on_back_to_selection_activate(self):
+    def _on_back_to_picker_activate(self):
         self.back_button.invoke()
 
     def _on_add_activate(self):
@@ -328,7 +328,7 @@ class TaskManagerWindow(tk.Toplevel):
             self._on_edit_activate()
 
         elif widget == self.back_button:
-            self._on_back_to_selection_activate()
+            self._on_back_to_picker_activate()
 
         elif widget == self.add_button:
             self._on_add_activate()
@@ -337,7 +337,7 @@ class TaskManagerWindow(tk.Toplevel):
         self._on_edit_activate()
 
     def _on_escape(self, _event=None) -> None:
-        self._on_back_to_selection_activate()
+        self._on_back_to_picker_activate()
 
     def _on_backspace(self, _event=None) -> None:
         if self.on_complete_task:
@@ -361,7 +361,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.new_task_priority_combo.set(task.priority)
 
-    def _setup_window(self, title: str, geometry: str) -> None:
+    def _setup_view(self, title: str, geometry: str) -> None:
         self.attributes("-topmost", True)
         self.lift()
         self.focus_force()
