@@ -1,3 +1,12 @@
+"""
+app/infrastructure/tray_manager.py
+
+System tray integration module.
+
+Provides TrayManager which manages the system tray icon and its menu actions
+using pystray. Supports application restart and graceful shutdown from tray.
+"""
+
 import pystray
 
 from PIL import Image
@@ -5,11 +14,14 @@ from PIL import Image
 
 class TrayManager:
     """
-    Manage the system tray icon and tray menu actions.
+    Manages system tray integration for the application.
 
-    This class integrates the application with the operation
-    system tray using pystray. It handles tray menu events,
-    application restarting, and graceful shutdown behavior.
+    Responsibilities:
+    - Create and display system tray icon
+    - Handle tray menu actions (restart, exit)
+    - Delegate application lifecycle actions via callbacks
+
+    This class acts as an infrastructure layer for OS-level integration.
     """
 
     def __init__(
@@ -48,23 +60,28 @@ class TrayManager:
 
     def run(self) -> None:
         """
-        Start the tray icon event loop in detached mode.
+        Start the system tray icon in detached mode.
+
+        This runs the tray event loop without blocking the main application.
         """
 
         self.icon.run_detached()
 
     def handle_restart(self) -> None:
         """
-        Trigger the callback for restarting the application from the tray menu.
+        Handle restart action from tray menu.
+
+        Delegates restart logic to the injected callback.
         """
 
         self.on_restart()
 
     def handle_exit(self) -> None:
         """
-        Trigger the callback for shutting down the app.
-        """
+        Handle exit action from tray menu.
 
+        Stops the tray icon and triggers application shutdown callback.
+        """
         self.icon.stop()
 
         self.on_exit()

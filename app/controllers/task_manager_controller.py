@@ -1,4 +1,14 @@
-# app/controllers/task_manager_controller.py
+"""
+app/controllers/task_manager_controller.py
+
+Task manager controller module.
+
+This controller connects TaskManager (service layer) with
+TaskManagerWindow (view), handling user interactions such as
+adding, editing, completing, and deleting tasks.
+
+It acts as a mediator between UI events and application business logic.
+"""
 
 from tkinter import messagebox
 
@@ -8,6 +18,17 @@ from app.models.task_manager import TaskManager
 
 
 class TaskManagerController:
+    """
+    Controller for task management UI.
+
+    Responsibilities:
+    - Handle user actions from TaskManagerWindow
+    - Invoke TaskManager service methods
+    - Update UI state after data changes
+    - Display confirmation and warning dialogs
+
+    This class contains application flow logic but no data persistence logic.
+    """
 
     def __init__(
         self,
@@ -40,18 +61,31 @@ class TaskManagerController:
         self.window.set_delete_callback(self.on_delete_task)
 
     def refresh_task_list(self) -> None:
+        """
+        Refresh the task list displayed in the UI.
+
+        Fetches incomplete tasks from TaskManager and updates the view.
+        """
 
         tasks = self.task_manager.get_incomplete_tasks()
 
         self.window.update_task_list(tasks)
 
     def on_open_task_selection_button(self) -> None:
+        """
+        Close current window and return to task selection screen.
+        """
 
         self.window.destroy()
 
         self.open_task_selection_callback()
 
     def on_add_task_click(self) -> None:
+        """
+        Create a new task from user input and refresh the task list.
+
+        Shows warning if input is invalid.
+        """
 
         input_value = self.window.get_input_value()
 
@@ -68,6 +102,11 @@ class TaskManagerController:
         self.refresh_task_list()
 
     def on_edit_task_click(self) -> None:
+        """
+        Edit selected task with new values from input fields.
+
+        Prompts user for confirmation before applying changes.
+        """
 
         selected_task = self.window.get_selected_task()
         input_value = self.window.get_input_value()
@@ -103,6 +142,10 @@ class TaskManagerController:
         self.refresh_task_list()
 
     def on_complete_task(self) -> None:
+        """
+        Mark the selected task as completed after user confirmation.
+        """
+
         selected_task = self.window.get_selected_task()
 
         if not selected_task:
@@ -122,6 +165,10 @@ class TaskManagerController:
         self.refresh_task_list()
 
     def on_delete_task(self) -> None:
+        """
+        Mark the selected task as deleted after user confirmation.
+        """
+
         selected_task = self.window.get_selected_task()
 
         if not selected_task:

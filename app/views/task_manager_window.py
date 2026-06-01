@@ -1,4 +1,6 @@
-# app/views/task_manager_window.py
+"""
+app/views/task_manager_window.py
+"""
 
 import tkinter as tk
 from tkinter import ttk
@@ -8,6 +10,16 @@ import app.config.constants as c
 
 
 class TaskManagerWindow(tk.Toplevel):
+    """
+    Task management UI window built with Tkinter.
+
+    Responsibilities:
+    - Present a list of tasks using a Treeview
+    - Provide inputs for creating and updating tasks
+    - Delegate task operations (add/edit/delete/complete) via callbacks
+
+    This class is a view component and does not contain business logic.
+    """
 
     def __init__(
         self,
@@ -201,6 +213,12 @@ class TaskManagerWindow(tk.Toplevel):
         self,
         tasks: list[Task],
     ) -> None:
+        """
+        Refresh task list in the Treeview.
+
+        Args:
+            tasks: List of tasks to display.
+        """
 
         for item_id in self.task_tree.get_children():
             self.task_tree.delete(item_id)
@@ -243,6 +261,12 @@ class TaskManagerWindow(tk.Toplevel):
         self.new_task_box.focus_set()
 
     def get_input_value(self) -> None:
+        """
+        Get current input values from entry and combobox.
+
+        Returns:
+            Dict with task name and priority, or None if invalid.
+        """
 
         task = self.new_task_box.get()
         priority = self.new_task_priority_combo.get()
@@ -253,6 +277,12 @@ class TaskManagerWindow(tk.Toplevel):
         return {"name": task, "priority": priority}
 
     def get_selected_task(self) -> Task | None:
+        """
+        Get currently selected task from Treeview.
+
+        Returns:
+            Selected Task or None.
+        """
 
         selection = self.task_tree.selection()
 
@@ -264,9 +294,23 @@ class TaskManagerWindow(tk.Toplevel):
         return self.display_tasks[index]
 
     def set_complete_callback(self, callback):
+        """
+        Set callback for complete action.
+
+        Args:
+            callback: Function to call when complete is triggered.
+        """
+
         self.complete_callback = callback
 
     def set_delete_callback(self, callback):
+        """
+        Set callback for delete action.
+
+        Args:
+            callback: Function to call when delete is triggered.
+        """
+
         self.delete_callback = callback
 
     def _on_edit_activate(self):
@@ -278,7 +322,7 @@ class TaskManagerWindow(tk.Toplevel):
     def _on_add_activate(self):
         self.add_button.invoke()
 
-    def _on_enter(self, event=None) -> None:
+    def _on_enter(self, _event=None) -> None:
         widget = self.focus_get()
 
         if widget == self.task_tree:
@@ -290,21 +334,21 @@ class TaskManagerWindow(tk.Toplevel):
         elif widget == self.add_button:
             self._on_add_activate()
 
-    def _on_double_click(self, event=None) -> None:
+    def _on_double_click(self, _event=None) -> None:
         self._on_edit_activate()
 
-    def _on_escape(self, event=None) -> None:
+    def _on_escape(self, _event=None) -> None:
         self._on_back_to_selection_activate()
 
-    def _on_backspace(self, event=None) -> None:
+    def _on_backspace(self, _event=None) -> None:
         if self.complete_callback:
             self.complete_callback()
 
-    def _on_delete(self, event=None) -> None:
+    def _on_delete(self, _event=None) -> None:
         if self.delete_callback:
             self.delete_callback()
 
-    def _on_select_task_tree(self, event=None) -> None:
+    def _on_select_task_tree(self, _event=None) -> None:
         selection = self.task_tree.selection()
 
         if not selection:

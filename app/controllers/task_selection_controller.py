@@ -1,4 +1,16 @@
-# app/controllers/task_selection_controller.py
+"""
+app/controllers/task_selection_controller.py
+
+Task selection controller module.
+
+This controller manages the task selection UI flow, including:
+- Displaying incomplete tasks
+- Handling task selection and confirmation
+- Snooze functionality (delayed reopening of selection window)
+- Navigation to task management screen
+
+It coordinates between TaskSelectionWindow, TaskManager, and TimerManager.
+"""
 
 from tkinter import messagebox
 
@@ -8,6 +20,17 @@ from app.models.task_manager import TaskManager
 
 
 class TaskSelectionController:
+    """
+    Controller for task selection screen.
+
+    Responsibilities:
+    - Manage task selection UI interactions
+    - Handle user decisions (select, complete, snooze, navigate)
+    - Coordinate TaskManager and TimerManager operations
+    - Control navigation between application windows
+
+    This class contains application flow logic and user interaction handling.
+    """
 
     def __init__(
         self,
@@ -44,18 +67,29 @@ class TaskSelectionController:
         self.window.set_complete_callback(self.on_complete_task)
 
     def refresh_task_list(self) -> None:
+        """
+        Refresh the task list in the selection window.
+
+        Loads incomplete tasks from TaskManager and updates the UI.
+        """
 
         tasks = self.task_manager.get_incomplete_tasks()
 
         self.window.update_task_list(tasks)
 
     def on_open_task_manager_button(self) -> None:
+        """
+        Close selection window and open task manager window.
+        """
 
         self.window.destroy()
 
         self.open_task_manager_callback()
 
     def on_snooze_click(self) -> None:
+        """
+        Temporarily close the window and reopen it after a delay.
+        """
 
         self.window.destroy()
 
@@ -65,6 +99,11 @@ class TaskSelectionController:
         )
 
     def on_decide_click(self) -> None:
+        """
+        Confirm task selection and mark it as last selected.
+
+        If confirmed, the window is closed and will reopen after a delay.
+        """
 
         selected_task = self.window.get_selected_task()
 
@@ -93,6 +132,10 @@ class TaskSelectionController:
         )
 
     def on_complete_task(self) -> None:
+        """
+        Mark the selected task as completed after user confirmation.
+        """
+
         selected_task = self.window.get_selected_task()
 
         if not selected_task:

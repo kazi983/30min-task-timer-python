@@ -8,6 +8,15 @@ import app.config.constants as c
 
 
 class TaskSelectionWindow(tk.Toplevel):
+    """
+    A task selection window that displays a list of tasks and allows the user
+    to select, complete, delete, or snooze tasks.
+
+    This window uses a Treeview to present task information such as priority,
+    name, and creation date. It supports keyboard and mouse interactions and
+    delegates task actions (complete/delete) via callbacks provided by the
+    controller.
+    """
 
     def __init__(
         self,
@@ -167,6 +176,12 @@ class TaskSelectionWindow(tk.Toplevel):
         self,
         tasks: list[Task],
     ) -> None:
+        """
+        Refresh the task list displayed in the Treeview.
+
+        Args:
+            tasks: A list of Task objects to display.
+        """
 
         for item_id in self.task_tree.get_children():
             self.task_tree.delete(item_id)
@@ -218,6 +233,12 @@ class TaskSelectionWindow(tk.Toplevel):
         self.task_tree.focus_set()
 
     def get_selected_task(self) -> Task | None:
+        """
+        Return the currently selected task in the Treeview.
+
+        Returns:
+            The selected Task object, or None if nothing is selected.
+        """
 
         selection = self.task_tree.selection()
 
@@ -231,9 +252,22 @@ class TaskSelectionWindow(tk.Toplevel):
         return self.display_tasks[index]
 
     def set_complete_callback(self, callback):
+        """
+        Set callback for complete action.
+
+        Args:
+            callback: Function to call when complete is triggered.
+        """
+
         self.complete_callback = callback
 
     def set_delete_callback(self, callback):
+        """
+        Set callback for delete action.
+
+        Args:
+            callback: Function to call when delete is triggered.
+        """
         self.delete_callback = callback
 
     def _on_tree_activate(self):
@@ -245,7 +279,7 @@ class TaskSelectionWindow(tk.Toplevel):
     def _on_decide_activate(self):
         self.decide_button.invoke()
 
-    def _on_enter(self, event=None) -> None:
+    def _on_enter(self, _event=None) -> None:
         widget = self.focus_get()
 
         if widget == self.task_tree:
@@ -257,16 +291,16 @@ class TaskSelectionWindow(tk.Toplevel):
         elif widget == self.decide_button:
             self._on_decide_activate()
 
-    def _on_escape(self, event=None) -> None:
+    def _on_escape(self, _event=None) -> None:
         self._on_snooze_activate()
 
-    def _on_double_click(self, event=None) -> None:
+    def _on_double_click(self, _event=None) -> None:
         self._on_decide_activate()
 
-    def _on_backspace(self, event=None) -> None:
+    def _on_backspace(self, _event=None) -> None:
         if self.complete_callback:
             self.complete_callback()
 
-    def _on_delete(self, event=None) -> None:
+    def _on_delete(self, _event=None) -> None:
         if self.delete_callback:
             self.delete_callback()

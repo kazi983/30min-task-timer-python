@@ -1,4 +1,14 @@
-# app/controllers/app_controller.py
+"""
+app/controllers/app_controller.py
+
+Application controller module.
+
+This module defines AppController, which is responsible for:
+- Initializing core application services (TaskManager, TimerManager)
+- Managing application windows (task selection / task manager)
+- Handling application lifecycle (restart, exit)
+- Integrating system tray operations
+"""
 
 import os
 import sys
@@ -26,7 +36,17 @@ import app.config.constants as c
 
 
 class AppController:
-    """control app"""
+    """
+    Central application controller.
+
+    Responsibilities:
+    - Manage application state and core services
+    - Control window lifecycle (open/close/switch views)
+    - Coordinate between UI (views), controllers, and services
+    - Handle application restart and shutdown logic
+
+    This class acts as the entry point and orchestrator of the application.
+    """
 
     def __init__(
         self,
@@ -60,10 +80,18 @@ class AppController:
         )
 
     def start(self) -> None:
+        """
+        Start the application by opening the initial window.
+        """
 
         self.open_task_selection_window()
 
     def open_task_selection_window(self) -> None:
+        """
+        Open the task selection window.
+
+        If an existing window is open, it will be destroyed and replaced.
+        """
 
         if self.task_selection_window:
             self.task_selection_window.destroy()
@@ -81,6 +109,11 @@ class AppController:
         )
 
     def open_task_manager_window(self) -> None:
+        """
+        Open the task manager window.
+
+        If an existing window is open, it will be destroyed and replaced.
+        """
 
         if self.task_manager_window:
             self.task_manager_window.destroy()
@@ -97,7 +130,7 @@ class AppController:
 
     def restart_app(self) -> None:
         """
-        Restart the application process.
+        Restart the application by re-executing the current Python process.
         """
 
         python = sys.executable
@@ -106,12 +139,17 @@ class AppController:
 
     def exit_app(self) -> None:
         """
-        Shut down app
+        Request application shutdown via Tkinter event loop.
         """
 
         self.root.after(0, self._shutdown)
 
     def _shutdown(self) -> None:
+        """
+        Perform graceful application shutdown.
+
+        Stops the Tkinter event loop and destroys root window.
+        """
 
         self.root.quit()
 
