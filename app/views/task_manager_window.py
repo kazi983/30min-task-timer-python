@@ -7,6 +7,7 @@ from tkinter import ttk
 
 from app.models.task import Task
 import app.config.constants as c
+from collections.abc import Callable
 
 
 class TaskManagerWindow(tk.Toplevel):
@@ -28,15 +29,9 @@ class TaskManagerWindow(tk.Toplevel):
 
         super().__init__(root)
 
-        self.attributes("-topmost", True)
-
-        self.lift()
-
-        self.focus_force()
-
-        self.title("タスク管理")
-
-        self.geometry(f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}")
+        self._setup_window(
+            title="タスク管理", geometry=f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}"
+        )
 
         self.on_delete_task = None
         self.on_complete_task = None
@@ -236,6 +231,10 @@ class TaskManagerWindow(tk.Toplevel):
         for index, task in enumerate(tasks):
             iid_str = str(index)
 
+            tags = (task.priority,)
+            if task.completed:
+                tags += ("completed",)
+
             self.task_tree.insert(
                 "",
                 tk.END,
@@ -246,7 +245,7 @@ class TaskManagerWindow(tk.Toplevel):
                     task.name,
                     task.created,
                 ),
-                tags=(task.priority,),
+                tags=tags,
             )
             if selected_item_id is None and task.last_selected:
                 selected_item_id = iid_str
@@ -260,7 +259,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.new_task_box.focus_set()
 
-    def get_input_value(self) -> None:
+    def get_input_value(self) -> dict[str, str] | None:
         """
         Get current input values from entry and combobox.
 
@@ -293,7 +292,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         return self.tasks[index]
 
-    def set_complete_callback(self, callback):
+    def set_complete_callback(self, callback: Callable[[], None]):
         """
         Set callback for complete action.
 
@@ -303,7 +302,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.on_complete_task = callback
 
-    def set_delete_callback(self, callback):
+    def set_delete_callback(self, callback: Callable[[], None]):
         """
         Set callback for delete action.
 
@@ -362,3 +361,10 @@ class TaskManagerWindow(tk.Toplevel):
         self.new_task_box.insert(0, task.name)
 
         self.new_task_priority_combo.set(task.priority)
+
+    def _setup_window(self, title: str, geometry: str) -> None:
+        self.attributes("-topmost", True)
+        self.lift()
+        self.focus_force()
+        self.title(title)
+        self.geometry(geometry)

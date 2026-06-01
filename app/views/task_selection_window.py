@@ -5,6 +5,7 @@ from tkinter import ttk
 
 from app.models.task import Task
 import app.config.constants as c
+from collections.abc import Callable
 
 
 class TaskSelectionWindow(tk.Toplevel):
@@ -25,15 +26,9 @@ class TaskSelectionWindow(tk.Toplevel):
 
         super().__init__(root)
 
-        self.attributes("-topmost", True)
-
-        self.lift()
-
-        self.focus_force()
-
-        self.title("タスク選択")
-
-        self.geometry(f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}")
+        self._setup_window(
+            title="タスク選択", geometry=f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}"
+        )
 
         self.on_delete_task = None
         self.on_complete_task = None
@@ -220,12 +215,6 @@ class TaskSelectionWindow(tk.Toplevel):
         if selected_item_id is None:
             selected_item_id = "0"
 
-        self.task_tree.tag_configure("NOW", background=c.COLOR_HIGH)
-        self.task_tree.tag_configure("SOONER", background=c.COLOR_MEDIUM)
-        self.task_tree.tag_configure("ANYTIME", background=c.COLOR_MEDIUM)
-        self.task_tree.tag_configure("SOMEDAY", background=c.COLOR_MEDIUM)
-        self.task_tree.tag_configure("completed", background="gray")
-
         self.task_tree.selection_set(selected_item_id)
         self.task_tree.focus(selected_item_id)
         self.task_tree.see(selected_item_id)
@@ -261,7 +250,7 @@ class TaskSelectionWindow(tk.Toplevel):
 
         self.on_complete_task = callback
 
-    def set_delete_callback(self, callback):
+    def set_delete_callback(self, callback: Callable[[], None]):
         """
         Set callback for delete action.
 
@@ -276,9 +265,6 @@ class TaskSelectionWindow(tk.Toplevel):
     def _activate_snooze(self):
         self.snooze_button.invoke()
 
-    def _on_decide_activate(self):
-        self.decide_button.invoke()
-
     def _on_enter(self, _event=None) -> None:
         widget = self.focus_get()
 
@@ -289,13 +275,13 @@ class TaskSelectionWindow(tk.Toplevel):
             self._activate_snooze()
 
         elif widget == self.decide_button:
-            self._on_decide_activate()
+            self._activate_decide()
 
     def _on_escape(self, _event=None) -> None:
         self._activate_snooze()
 
     def _on_double_click(self, _event=None) -> None:
-        self._on_decide_activate()
+        self._activate_decide()
 
     def _on_backspace(self, _event=None) -> None:
         if self.on_complete_task:
@@ -304,3 +290,10 @@ class TaskSelectionWindow(tk.Toplevel):
     def _on_delete(self, _event=None) -> None:
         if self.on_delete_task:
             self.on_delete_task()
+
+    def _setup_window(self, title: str, geometry: str) -> None:
+        self.attributes("-topmost", True)
+        self.lift()
+        self.focus_force()
+        self.title(title)
+        self.geometry(geometry)
