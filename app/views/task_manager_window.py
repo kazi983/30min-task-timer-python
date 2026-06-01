@@ -229,7 +229,6 @@ class TaskManagerWindow(tk.Toplevel):
 
         selected_item_id = None
         for index, task in enumerate(tasks):
-            iid_str = str(index)
 
             tags = (task.priority,)
             if task.completed:
@@ -238,7 +237,7 @@ class TaskManagerWindow(tk.Toplevel):
             self.task_tree.insert(
                 "",
                 tk.END,
-                iid=iid_str,
+                iid=task.id,
                 values=(
                     task.completed,
                     task.priority,
@@ -247,11 +246,12 @@ class TaskManagerWindow(tk.Toplevel):
                 ),
                 tags=tags,
             )
+
             if selected_item_id is None and task.last_selected:
-                selected_item_id = iid_str
+                selected_item_id = task.id
 
         if selected_item_id is None:
-            selected_item_id = "0"
+            selected_item_id = tasks[0].id
 
         self.task_tree.selection_set(selected_item_id)
         self.task_tree.focus(selected_item_id)
@@ -288,9 +288,9 @@ class TaskManagerWindow(tk.Toplevel):
         if not selection:
             return None
 
-        index = int(selection[0])
+        task_id = selection[0]
 
-        return self.tasks[index]
+        return next((t for t in self.tasks if t.id == task_id), None)
 
     def set_complete_callback(self, callback: Callable[[], None]):
         """
@@ -353,9 +353,8 @@ class TaskManagerWindow(tk.Toplevel):
         if not selection:
             return None
 
-        index = int(selection[0])
-
-        task = self.tasks[index]
+        task_id = selection[0]
+        task = next((t for t in self.tasks if t.id == task_id), None)
 
         self.new_task_box.delete(0, tk.END)
         self.new_task_box.insert(0, task.name)

@@ -10,6 +10,7 @@ Provides serialization and deserialization helpers for JSON persistence.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import uuid
 
 
 @dataclass
@@ -26,6 +27,7 @@ class Task:
         deleted: Soft delete flag.
     """
 
+    id: str
     name: str
     completed: bool = False
     priority: str = "なし"
@@ -45,6 +47,7 @@ class Task:
             Task instance.
         """
         return Task(
+            id=data["id"],
             name=data["text"],
             completed=data.get("completed", False),
             priority=data.get("priority", "なし"),
@@ -61,6 +64,7 @@ class Task:
             Dictionary representation of the task.
         """
         return {
+            "index": self.id,
             "text": self.name,
             "completed": self.completed,
             "priority": self.priority,
