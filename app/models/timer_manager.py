@@ -18,7 +18,7 @@ class TimerManager:
     def __init__(self, root: tk.Tk) -> None:
         self.root = root
 
-    def set_timeout(
+    def schedule(
         self,
         milliseconds: int,
         callback: Callable[[], None],

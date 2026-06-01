@@ -52,7 +52,7 @@ class TaskSelectionController:
 
         self.refresh_task_list()
 
-        self.window.open_task_manager_button.config(
+        self.window.task_manager_button.config(
             command=self.on_open_task_manager_button,
         )
 
@@ -60,7 +60,7 @@ class TaskSelectionController:
             command=self.on_snooze_click,
         )
 
-        self.window.decide_button.config(
+        self.window.confirm_button.config(
             command=self.on_decide_click,
         )
 
@@ -122,7 +122,7 @@ class TaskSelectionController:
             ):
                 return
 
-        selected_task.last_selected = True
+        self.task_manager.mark_task_as_last_selected(selected_task)
 
         self.window.destroy()
 
@@ -150,6 +150,6 @@ class TaskSelectionController:
             ):
                 return
 
-        self.task_manager.complete_task(selected_task)
+        self.task_manager.set_task_as_complete(selected_task)
 
         self.refresh_task_list()
