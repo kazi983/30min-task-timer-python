@@ -61,9 +61,9 @@ class AppController:
 
     def start(self) -> None:
 
-        self.open_task_select_window()
+        self.open_task_selection_window()
 
-    def open_task_select_window(self) -> None:
+    def open_task_selection_window(self) -> None:
 
         if self.task_select_window:
             self.task_select_window.destroy()
@@ -76,14 +76,14 @@ class AppController:
             window=self.task_select_window,
             task_manager=self.task_manager,
             timer_manager=self.timer_manager,
-            reopen_callback=self.open_task_select_window,
+            reopen_callback=self.open_task_selection_window,
             open_task_manager_callback=self.open_task_manager_window,
         )
 
     def open_task_manager_window(self) -> None:
 
-        if self.task_select_window:
-            self.task_select_window.destroy()
+        if self.task_manager_window:
+            self.task_manager_window.destroy()
 
         self.task_manager_window = TaskManagerWindow(
             root=self.root,
@@ -92,7 +92,7 @@ class AppController:
         TaskManagerController(
             window=self.task_manager_window,
             task_manager=self.task_manager,
-            open_task_selection_callback=self.open_task_manager_window,
+            open_task_selection_callback=self.open_task_selection_window,
         )
 
     def restart_app(self) -> None:
