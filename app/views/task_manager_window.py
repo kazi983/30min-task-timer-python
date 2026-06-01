@@ -50,7 +50,7 @@ class TaskManagerWindow(tk.Toplevel):
         # Treeview
         # ========================
 
-        columns = ("completed", "priority", "name", "created")
+        columns = ("completed", "priority", "name", "created_at")
 
         self.task_tree = ttk.Treeview(
             self,
@@ -72,7 +72,7 @@ class TaskManagerWindow(tk.Toplevel):
         self.task_tree.heading("name", text="タスク")
 
         self.task_tree.heading(
-            "created",
+            "created_at",
             text="作成日時",
         )
 
@@ -94,7 +94,7 @@ class TaskManagerWindow(tk.Toplevel):
         )
 
         self.task_tree.column(
-            "created",
+            "created_at",
             width=c.TR_WIDTH_DATE,
         )
 
@@ -104,6 +104,12 @@ class TaskManagerWindow(tk.Toplevel):
             padx=20,
             pady=10,
         )
+
+        for priority, color in c.PRIORITY_COLORS.items():
+            self.task_tree.tag_configure(
+                priority,
+                background=color,
+            )
 
         # ========================
         # scrollbar
@@ -144,6 +150,7 @@ class TaskManagerWindow(tk.Toplevel):
             state="readonly",
             values=["NOW", "SOONER", "ANYTIME", "SOMEDAY"],
         )
+        self.new_task_priority_combo.set("NOW")
         self.new_task_priority_combo.pack(side=tk.LEFT, padx=10)
 
         # ========================
@@ -220,13 +227,6 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.tasks = tasks
 
-        for priority, color in c.PRIORITY_COLORS.items():
-
-            self.task_tree.tag_configure(
-                priority,
-                background=color,
-            )
-
         selected_item_id = None
         for index, task in enumerate(tasks):
 
@@ -242,7 +242,7 @@ class TaskManagerWindow(tk.Toplevel):
                     task.completed,
                     task.priority,
                     task.name,
-                    task.created,
+                    task.created_local(),
                 ),
                 tags=tags,
             )
@@ -250,7 +250,7 @@ class TaskManagerWindow(tk.Toplevel):
             if selected_item_id is None and task.last_selected:
                 selected_item_id = task.id
 
-        if selected_item_id is None:
+        if selected_item_id is None and tasks:
             selected_item_id = tasks[0].id
 
         self.task_tree.selection_set(selected_item_id)

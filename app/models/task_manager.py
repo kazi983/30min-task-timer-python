@@ -15,7 +15,7 @@ between the UI and data storage.
 from __future__ import annotations
 
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 from app.models.task import Task
@@ -62,7 +62,7 @@ class TaskManager:
             id=str(uuid.uuid4()),
             name=text,
             priority=priority,
-            created=datetime.now().strftime("%Y-%m-%d %H:%M"),
+            created_at=datetime.now(timezone.utc),
         )
 
         self.tasks.append(task)
@@ -85,7 +85,7 @@ class TaskManager:
 
         self.save_tasks()
 
-    def complete_task(self, task: Task) -> None:
+    def set_task_as_complete(self, task: Task) -> None:
         """
         Mark a task as completed.
 
@@ -96,7 +96,7 @@ class TaskManager:
 
         self.save_tasks()
 
-    def delete_task(self, task: Task) -> None:
+    def set_task_as_delete(self, task: Task) -> None:
         """
         Mark a task as deleted (soft delete).
 
@@ -152,23 +152,6 @@ class TaskManager:
 
         return [task for task in self.tasks if task.last_selected]
 
-    def normalize_date(self, date_str: str) -> str:
-        """
-        Normalize date string to YYYY-MM-DD format (first 10 characters).
-
-        Args:
-            date_str: Raw date string.
-
-        Returns:
-            Normalized date string.
-        """
-
-        return (
-            date_str[:10]
-            if isinstance(date_str, str) and len(date_str) >= 10
-            else date_str
-        )
-
     def load_tasks(self) -> None:
         """
         Load tasks from the JSON file into memory.
@@ -188,12 +171,7 @@ class TaskManager:
                 json_tasks = json.load(file)
 
             self.tasks = [
-                Task.from_dict(
-                    {
-                        **task_data,
-                        "created": self.normalize_date(task_data.get("created", "")),
-                    }
-                )
+                Task.from_dict(task_data)
                 for task_data in json_tasks
                 if not task_data.get("deleted", False)
             ]

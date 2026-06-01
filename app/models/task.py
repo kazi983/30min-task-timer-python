@@ -11,6 +11,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import uuid
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+from dataclasses import field
+
+LOCAL_TZ = ZoneInfo("America/Vancouver")
 
 
 @dataclass
@@ -31,7 +36,7 @@ class Task:
     name: str
     completed: bool = False
     priority: str = "なし"
-    created: str = ""
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     last_selected: bool = False
     deleted: bool = False
 
@@ -46,12 +51,20 @@ class Task:
         Returns:
             Task instance.
         """
+
+        created_at_str = data.get("created_at", datetime.now(timezone.utc))
+        created_at = (
+            datetime.fromisoformat(created_at_str)
+            if created_at_str
+            else datetime.now(timezone.utc)
+        )
+
         return Task(
             id=data.get("id", str(uuid.uuid4())),
-            name=data["text"],
+            name=data["name"],
             completed=data.get("completed", False),
             priority=data.get("priority", "なし"),
-            created=data.get("created", ""),
+            created_at=created_at,
             last_selected=data.get("last_selected", False),
             deleted=data.get("deleted", False),
         )
@@ -64,11 +77,14 @@ class Task:
             Dictionary representation of the task.
         """
         return {
-            "index": self.id,
-            "text": self.name,
+            "id": self.id,
+            "name": self.name,
             "completed": self.completed,
             "priority": self.priority,
-            "created": self.created,
+            "created_at": self.created_at.isoformat(),
             "last_selected": self.last_selected,
             "deleted": self.deleted,
         }
+
+    def created_local(self) -> str:
+        return self.created_at.astimezone(LOCAL_TZ).strftime("%Y-%m-%d")

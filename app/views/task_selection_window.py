@@ -47,7 +47,7 @@ class TaskSelectionWindow(tk.Toplevel):
         # Treeview
         # ========================
 
-        columns = ("priority", "name", "created")
+        columns = ("priority", "name", "created_at")
 
         self.task_tree = ttk.Treeview(
             self,
@@ -64,7 +64,7 @@ class TaskSelectionWindow(tk.Toplevel):
         self.task_tree.heading("name", text="タスク")
 
         self.task_tree.heading(
-            "created",
+            "created_at",
             text="作成日時",
         )
 
@@ -80,7 +80,7 @@ class TaskSelectionWindow(tk.Toplevel):
         )
 
         self.task_tree.column(
-            "created",
+            "created_at",
             width=c.TR_WIDTH_DATE,
         )
 
@@ -90,6 +90,12 @@ class TaskSelectionWindow(tk.Toplevel):
             padx=20,
             pady=10,
         )
+
+        for priority, color in c.PRIORITY_COLORS.items():
+            self.task_tree.tag_configure(
+                priority,
+                background=color,
+            )
 
         # ========================
         # scrollbar
@@ -130,22 +136,22 @@ class TaskSelectionWindow(tk.Toplevel):
             padx=5,
         )
 
-        self.decide_button = ttk.Button(
+        self.confirm_button = ttk.Button(
             button_frame_main,
             text="決定",
         )
 
-        self.decide_button.pack(
+        self.confirm_button.pack(
             side=tk.LEFT,
             padx=30,
         )
 
-        self.open_task_manager_button = ttk.Button(
+        self.task_manager_button = ttk.Button(
             button_frame_sub,
             text="管理画面",
         )
 
-        self.open_task_manager_button.pack(
+        self.task_manager_button.pack(
             side=tk.LEFT,
             padx=5,
         )
@@ -159,7 +165,7 @@ class TaskSelectionWindow(tk.Toplevel):
 
         self.snooze_button.bind("<Return>", self._on_enter)
 
-        self.decide_button.bind("<Return>", self._on_enter)
+        self.confirm_button.bind("<Return>", self._on_enter)
 
         self.bind("<Escape>", self._on_escape)
 
@@ -183,13 +189,6 @@ class TaskSelectionWindow(tk.Toplevel):
 
         self.tasks = tasks
 
-        for priority, color in c.PRIORITY_COLORS.items():
-
-            self.task_tree.tag_configure(
-                priority,
-                background=color,
-            )
-
         selected_item_id = None
         for index, task in enumerate(tasks):
             iid_str = str(index)
@@ -205,15 +204,15 @@ class TaskSelectionWindow(tk.Toplevel):
                 values=(
                     task.priority,
                     task.name,
-                    task.created,
+                    task.created_local(),
                 ),
                 tags=tags,
             )
             if selected_item_id is None and task.last_selected:
                 selected_item_id = iid_str
 
-        if selected_item_id is None:
-            selected_item_id = "0"
+        if selected_item_id is None and tasks:
+            selected_item_id = tasks[0].id
 
         self.task_tree.selection_set(selected_item_id)
         self.task_tree.focus(selected_item_id)
@@ -260,7 +259,7 @@ class TaskSelectionWindow(tk.Toplevel):
         self.on_delete_task = callback
 
     def _activate_decide(self):
-        self.decide_button.invoke()
+        self.confirm_button.invoke()
 
     def _activate_snooze(self):
         self.snooze_button.invoke()
@@ -274,7 +273,7 @@ class TaskSelectionWindow(tk.Toplevel):
         elif widget == self.snooze_button:
             self._activate_snooze()
 
-        elif widget == self.decide_button:
+        elif widget == self.confirm_button:
             self._activate_decide()
 
     def _on_escape(self, _event=None) -> None:
