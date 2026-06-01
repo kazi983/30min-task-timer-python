@@ -19,6 +19,7 @@ from datetime import datetime
 import json
 
 from app.models.task import Task
+import uuid
 
 
 class TaskManager:
@@ -58,6 +59,7 @@ class TaskManager:
             raise ValueError("タスク名が空です")
 
         task = Task(
+            id=str(uuid.uuid4()),
             name=text,
             priority=priority,
             created=datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -90,7 +92,6 @@ class TaskManager:
         Args:
             task: Task to mark as completed.
         """
-
         task.completed = True
 
         self.save_tasks()

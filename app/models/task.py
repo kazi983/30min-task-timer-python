@@ -10,6 +10,7 @@ Provides serialization and deserialization helpers for JSON persistence.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import uuid
 
 
 @dataclass
@@ -46,7 +47,7 @@ class Task:
             Task instance.
         """
         return Task(
-            id=data["id"],
+            id=data.get("id", str(uuid.uuid4())),
             name=data["text"],
             completed=data.get("completed", False),
             priority=data.get("priority", "なし"),
