@@ -63,8 +63,6 @@ class TaskManagerController:
 
             return
 
-        print(input_value)
-
         self.task_manager.add_task(input_value["name"], input_value["priority"])
 
         self.refresh_task_list()
@@ -76,14 +74,24 @@ class TaskManagerController:
 
         if not selected_task or not input_value:
             return
+        if (
+            selected_task.priority != input_value["priority"]
+        ) and selected_task.name != input_value["name"]:
+            messagebox.showwarning(
+                "変更なし", "変更内容を入力してください", parent=self.window
+            )
 
         if selected_task:
 
+            message = "更新しますか？"
+            if selected_task.name != input_value["name"]:
+                message += f"\n\t{selected_task.name}\t ➤ {input_value['name']}"
+            if selected_task.priority != input_value["priority"]:
+                message += f"\n\t{selected_task.priority}\t ➤ {input_value['priority']}"
+
             if not messagebox.askokcancel(
                 "タスク完了",
-                f"更新しますか？\
-                {selected_task.name} - {selected_task.priority}\
-                {input_value['name']} - {input_value['priority']}",
+                message,
                 parent=self.window,
             ):
                 return
