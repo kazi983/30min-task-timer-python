@@ -145,7 +145,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.add_button = ttk.Button(
             self.button_frame_top,
-            text="登録",
+            text="新規登録",
         )
 
         self.add_button.pack(
@@ -155,7 +155,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.edit_button = ttk.Button(
             self.button_frame_middle,
-            text="編集",
+            text="上書き",
         )
 
         self.edit_button.pack(
@@ -178,10 +178,13 @@ class TaskManagerWindow(tk.Toplevel):
         # ========================
         self.task_tree.bind("<Return>", self._on_enter)
         self.task_tree.bind("<BackSpace>", self._on_backspace)
+        self.task_tree.bind("<Delete>", self._on_delete)
 
         self.bind("<Escape>", self._on_escape)
 
         self.task_tree.bind("<Double-1>", self._on_double_click)
+
+        self.task_tree.bind("<<TreeviewSelect>>", self._on_select_task_tree)
 
         self.display_tasks: list[Task] = []
 
@@ -249,9 +252,7 @@ class TaskManagerWindow(tk.Toplevel):
         if not selection:
             return None
 
-        item_id = selection[0]
-
-        index = int(item_id)
+        index = int(selection[0])
 
         return self.display_tasks[index]
 
@@ -287,6 +288,21 @@ class TaskManagerWindow(tk.Toplevel):
 
     def _on_delete(self, event=None) -> None:
         self.delete_callback()
+
+    def _on_select_task_tree(self, event=None) -> None:
+        selection = self.task_tree.selection()
+
+        if not selection:
+            return None
+
+        index = int(selection[0])
+
+        task = self.display_tasks[index]
+
+        self.new_task_box.delete(0, tk.END)
+        self.new_task_box.insert(0, task.name)
+
+        self.new_task_priority_combo.set(task.priority)
 
     def set_complete_callback(self, callback):
         self.complete_callback = callback
