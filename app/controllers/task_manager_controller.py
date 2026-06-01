@@ -1,0 +1,133 @@
+# app/controllers/task_manager_controller.py
+
+from tkinter import messagebox
+
+import app.config.constants as c
+from app.views.task_manager_window import TaskManagerWindow
+from app.models.task_manager import TaskManager
+
+
+class TaskManagerController:
+
+    def __init__(
+        self,
+        window: TaskManagerWindow,
+        task_manager: TaskManager,
+        open_task_selection_callback,
+    ) -> None:
+
+        self.window = window
+
+        self.task_manager = task_manager
+
+        self.open_task_selection_callback = open_task_selection_callback
+
+        self.refresh_task_list()
+
+        self.window.add_button.config(
+            command=self.on_add_task_click,
+        )
+
+        self.window.edit_button.config(
+            command=self.on_edit_task_click,
+        )
+
+        self.window.open_task_selection_button.config(
+            command=self.on_open_task_selection_button,
+        )
+
+        self.window.set_complete_callback(self.on_complete_task)
+        self.window.set_delete_callback(self.on_delete_task)
+
+    def refresh_task_list(self) -> None:
+
+        tasks = self.task_manager.get_incomplete_tasks()
+
+        self.window.update_task_list(tasks)
+
+    def on_open_task_selection_button(self) -> None:
+
+        self.window.destroy()
+
+        self.open_task_selection_callback()
+
+    def on_add_task_click(self) -> None:
+
+        input_value = self.window.get_input_value()
+
+        if not input_value:
+
+            messagebox.showwarning(
+                "未入力", "タスクを入力してください", parent=self.window
+            )
+
+            return
+
+        print(input_value)
+
+        self.task_manager.add_task(input_value["name"], input_value["priority"])
+
+        self.refresh_task_list()
+
+    def on_edit_task_click(self) -> None:
+
+        selected_task = self.window.get_selected_task()
+        input_value = self.window.get_input_value()
+
+        if not selected_task or not input_value:
+            return
+
+        if selected_task:
+
+            if not messagebox.askokcancel(
+                "タスク完了",
+                f"更新しますか？\
+                {selected_task.name} - {selected_task.priority}\
+                {input_value['name']} - {input_value['priority']}",
+                parent=self.window,
+            ):
+                return
+
+        self.task_manager.edit_task(
+            selected_task, input_value["name"], input_value["priority"]
+        )
+
+        self.refresh_task_list()
+
+    def on_complete_task(self) -> None:
+        selected_task = self.window.get_selected_task()
+
+        if not selected_task:
+            return
+
+        if selected_task:
+
+            if not messagebox.askokcancel(
+                "タスク完了",
+                f"{selected_task.name} を完了済みタスクに登録しますか？",
+                parent=self.window,
+            ):
+                return
+
+        self.task_manager.complete_task(selected_task)
+
+        self.refresh_task_list()
+
+    def on_delete_task(self) -> None:
+        selected_task = self.window.get_selected_task()
+
+        if not selected_task:
+            return
+
+        if selected_task:
+
+            if not messagebox.askokcancel(
+                "タスク削除",
+                f"{selected_task.name} を削除しますか？",
+                parent=self.window,
+            ):
+                return
+
+        self.task_manager.delete_task(selected_task)
+
+        self.refresh_task_list()

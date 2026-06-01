@@ -15,6 +15,7 @@ class TaskSelectController:
         task_manager: TaskManager,
         timer_manager,
         reopen_callback,
+        open_task_manager_callback,
     ) -> None:
 
         self.window = window
@@ -24,8 +25,13 @@ class TaskSelectController:
         self.timer_manager = timer_manager
 
         self.reopen_callback = reopen_callback
+        self.open_task_manager_callback = open_task_manager_callback
 
         self.refresh_task_list()
+
+        self.window.open_task_manager_button.config(
+            command=self.on_open_task_manager_button,
+        )
 
         self.window.snooze_button.config(
             command=self.on_snooze_click,
@@ -42,6 +48,12 @@ class TaskSelectController:
         tasks = self.task_manager.get_incomplete_tasks()
 
         self.window.update_task_list(tasks)
+
+    def on_open_task_manager_button(self) -> None:
+
+        self.window.destroy()
+
+        self.open_task_manager_callback()
 
     def on_snooze_click(self) -> None:
 

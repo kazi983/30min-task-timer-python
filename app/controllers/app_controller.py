@@ -7,25 +7,18 @@ import tkinter.font as tkfont
 
 from pathlib import Path
 
-from app.models.task_manager import (
-    TaskManager,
-)
+from app.models.task_manager import TaskManager
 
-from app.models.timer_manager import (
-    TimerManager,
-)
+from app.models.timer_manager import TimerManager
 
-from app.views.task_select_window import (
-    TaskSelectWindow,
-)
+from app.views.task_select_window import TaskSelectWindow
+from app.views.task_manager_window import TaskManagerWindow
 
-from app.controllers.task_select_controller import (
-    TaskSelectController,
-)
+from app.controllers.task_select_controller import TaskSelectController
 
-from app.config.paths import (
-    TASK_DATA_FILE,
-)
+from app.controllers.task_manager_controller import TaskManagerController
+
+from app.config.paths import TASK_DATA_FILE
 
 from app.infrastructure.tray_manager import TrayManager
 
@@ -56,6 +49,9 @@ class AppController:
             root,
         )
 
+        self.task_select_window = None
+        self.task_manager_window = None
+
         default_font = tkfont.nametofont("TkDefaultFont")
 
         default_font.configure(
@@ -69,15 +65,34 @@ class AppController:
 
     def open_task_select_window(self) -> None:
 
-        window = TaskSelectWindow(
+        if self.task_select_window:
+            self.task_select_window.destroy()
+
+        self.task_select_window = TaskSelectWindow(
             root=self.root,
         )
 
         TaskSelectController(
-            window=window,
+            window=self.task_select_window,
             task_manager=self.task_manager,
             timer_manager=self.timer_manager,
-            reopen_callback=(self.open_task_select_window),
+            reopen_callback=self.open_task_select_window,
+            open_task_manager_callback=self.open_task_manager_window,
+        )
+
+    def open_task_manager_window(self) -> None:
+
+        if self.task_select_window:
+            self.task_select_window.destroy()
+
+        self.task_manager_window = TaskManagerWindow(
+            root=self.root,
+        )
+
+        TaskManagerController(
+            window=self.task_manager_window,
+            task_manager=self.task_manager,
+            open_task_selection_callback=self.open_task_manager_window,
         )
 
     def restart_app(self) -> None:

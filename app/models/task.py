@@ -10,6 +10,7 @@ class Task:
     priority: str = "なし"
     created: str = ""
     last_selected: bool = False
+    deleted: bool = False
 
     @staticmethod
     def from_dict(data: dict) -> "Task":
@@ -19,6 +20,7 @@ class Task:
             priority=data.get("priority", "なし"),
             created=data.get("created", ""),
             last_selected=data.get("last_selected", False),
+            deleted=data.get("deleted", False),
         )
 
     def to_dict(self) -> dict:
@@ -28,4 +30,5 @@ class Task:
             "priority": self.priority,
             "created": self.created,
             "last_selected": self.last_selected,
+            "deleted": self.deleted,
         }

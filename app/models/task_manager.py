@@ -29,6 +29,13 @@ class TaskManager:
 
         return task
 
+    def edit_task(self, task: Task, name: str, priority: str) -> None:
+
+        task.name = name
+        task.priority = priority
+
+        self.save_tasks()
+
     def complete_task(self, task: Task) -> None:
 
         task.completed = True
@@ -37,15 +44,9 @@ class TaskManager:
 
     def delete_task(self, task: Task) -> None:
 
-        self.tasks.remove(task)
+        task.deleted = True
 
         self.save_tasks()
-
-    def get_incomplete_tasks(self) -> list[Task]:
-        return [task for task in self.tasks if not task.completed]
-
-    def get_last_selected_tasks(self) -> list[Task]:
-        return [task for task in self.tasks if task.last_selected]
 
     def save_tasks(self) -> None:
         try:
@@ -60,6 +61,19 @@ class TaskManager:
 
             raise IOError(f"タスクの保存に失敗: {error}") from error
 
+    def get_incomplete_tasks(self) -> list[Task]:
+        return [task for task in self.tasks if not task.completed]
+
+    def get_last_selected_tasks(self) -> list[Task]:
+        return [task for task in self.tasks if task.last_selected]
+
+    def normalize_date(self, date_str: str) -> str:
+        return (
+            date_str[:10]
+            if isinstance(date_str, str) and len(date_str) >= 10
+            else date_str
+        )
+
     def load_tasks(self) -> None:
         if not self.data_file.exists():
             self.tasks = []
@@ -69,7 +83,16 @@ class TaskManager:
             with open(self.data_file, "r", encoding="utf-8") as file:
                 json_tasks = json.load(file)
 
-            self.tasks = [Task.from_dict(task_data) for task_data in json_tasks]
+            self.tasks = [
+                Task.from_dict(
+                    {
+                        **task_data,
+                        "created": self.normalize_date(task_data.get("created", "")),
+                    }
+                )
+                for task_data in json_tasks
+                if not task_data.get("deleted", False)
+            ]
 
         except (json.JSONDecodeError, IOError) as error:
             raise RuntimeError(f"読み込みエラー: {error}")
