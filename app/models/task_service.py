@@ -115,6 +115,8 @@ class TaskService:
         Args:
             task: Task to mark as last selected.
         """
+        for t in self.tasks:
+            t.last_selected = False
 
         task.last_selected = True
 
