@@ -26,6 +26,13 @@ class TaskSelectionWindow(tk.Toplevel):
 
         self.geometry(f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}")
 
+        self.delete_callback = None
+        self.complete_callback = None
+
+        # ========================
+        # Title
+        # ========================
+
         title_label = ttk.Label(
             self,
             text="次のタスクを選択してください",
@@ -257,7 +264,9 @@ class TaskSelectionWindow(tk.Toplevel):
         self._on_decide_activate()
 
     def _on_backspace(self, event=None) -> None:
-        self.complete_callback()
+        if self.complete_callback:
+            self.complete_callback()
 
     def _on_delete(self, event=None) -> None:
-        self.delete_callback()
+        if self.delete_callback:
+            self.delete_callback()
