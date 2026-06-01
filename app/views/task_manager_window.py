@@ -26,6 +26,13 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.geometry(f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}")
 
+        self.delete_callback = None
+        self.complete_callback = None
+
+        # ========================
+        # Title
+        # ========================
+
         title_label = ttk.Label(
             self,
             text="タスク管理",
@@ -256,6 +263,12 @@ class TaskManagerWindow(tk.Toplevel):
 
         return self.display_tasks[index]
 
+    def set_complete_callback(self, callback):
+        self.complete_callback = callback
+
+    def set_delete_callback(self, callback):
+        self.delete_callback = callback
+
     def _on_edit_activate(self):
         self.edit_button.invoke()
 
@@ -284,10 +297,12 @@ class TaskManagerWindow(tk.Toplevel):
         self._on_back_to_selection_activate()
 
     def _on_backspace(self, event=None) -> None:
-        self.complete_callback()
+        if self.complete_callback:
+            self.complete_callback()
 
     def _on_delete(self, event=None) -> None:
-        self.delete_callback()
+        if self.delete_callback:
+            self.delete_callback()
 
     def _on_select_task_tree(self, event=None) -> None:
         selection = self.task_tree.selection()
@@ -303,9 +318,3 @@ class TaskManagerWindow(tk.Toplevel):
         self.new_task_box.insert(0, task.name)
 
         self.new_task_priority_combo.set(task.priority)
-
-    def set_complete_callback(self, callback):
-        self.complete_callback = callback
-
-    def set_delete_callback(self, callback):
-        self.delete_callback = callback
