@@ -10,7 +10,6 @@ Provides serialization and deserialization helpers for JSON persistence.
 from __future__ import annotations
 
 from dataclasses import dataclass
-import uuid
 
 
 @dataclass
