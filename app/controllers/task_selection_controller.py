@@ -1,17 +1,17 @@
-# app/controllers/task_select_controller.py
+# app/controllers/task_selection_controller.py
 
 from tkinter import messagebox
 
 import app.config.constants as c
-from app.views.task_select_window import TaskSelectWindow
+from app.views.task_selection_window import TaskSelectionWindow
 from app.models.task_manager import TaskManager
 
 
-class TaskSelectController:
+class TaskSelectionController:
 
     def __init__(
         self,
-        window: TaskSelectWindow,
+        window: TaskSelectionWindow,
         task_manager: TaskManager,
         timer_manager,
         reopen_callback,

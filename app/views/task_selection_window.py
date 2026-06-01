@@ -1,4 +1,4 @@
-# app/views/task_select_window.py
+# app/views/task_selection_window.py
 
 import tkinter as tk
 from tkinter import ttk
@@ -7,7 +7,7 @@ from app.models.task import Task
 import app.config.constants as c
 
 
-class TaskSelectWindow(tk.Toplevel):
+class TaskSelectionWindow(tk.Toplevel):
 
     def __init__(
         self,
@@ -210,15 +210,6 @@ class TaskSelectWindow(tk.Toplevel):
 
         self.task_tree.focus_set()
 
-    def get_priority_color(self, priority: str) -> str:
-        """優先度に応じた背景色を返す"""
-        return {
-            "高": COLOR_HIGH,
-            "中": COLOR_MEDIUM,
-            "低": COLOR_LOW,
-            "なし": COLOR_NONE,
-        }.get(priority, COLOR_NONE)
-
     def get_selected_task(self) -> Task | None:
 
         selection = self.task_tree.selection()
@@ -231,6 +222,12 @@ class TaskSelectWindow(tk.Toplevel):
         index = int(item_id)
 
         return self.display_tasks[index]
+
+    def set_complete_callback(self, callback):
+        self.complete_callback = callback
+
+    def set_delete_callback(self, callback):
+        self.delete_callback = callback
 
     def _on_tree_activate(self):
         self.decide_button.invoke()
@@ -264,9 +261,3 @@ class TaskSelectWindow(tk.Toplevel):
 
     def _on_delete(self, event=None) -> None:
         self.delete_callback()
-
-    def set_complete_callback(self, callback):
-        self.complete_callback = callback
-
-    def set_delete_callback(self, callback):
-        self.delete_callback = callback

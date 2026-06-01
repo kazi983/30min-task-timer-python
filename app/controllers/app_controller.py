@@ -11,10 +11,10 @@ from app.models.task_manager import TaskManager
 
 from app.models.timer_manager import TimerManager
 
-from app.views.task_select_window import TaskSelectWindow
+from app.views.task_selection_window import TaskSelectionWindow
 from app.views.task_manager_window import TaskManagerWindow
 
-from app.controllers.task_select_controller import TaskSelectController
+from app.controllers.task_selection_controller import TaskSelectionController
 
 from app.controllers.task_manager_controller import TaskManagerController
 
@@ -49,7 +49,7 @@ class AppController:
             root,
         )
 
-        self.task_select_window = None
+        self.task_selection_window = None
         self.task_manager_window = None
 
         default_font = tkfont.nametofont("TkDefaultFont")
@@ -65,15 +65,15 @@ class AppController:
 
     def open_task_selection_window(self) -> None:
 
-        if self.task_select_window:
-            self.task_select_window.destroy()
+        if self.task_selection_window:
+            self.task_selection_window.destroy()
 
-        self.task_select_window = TaskSelectWindow(
+        self.task_selection_window = TaskSelectionWindow(
             root=self.root,
         )
 
-        TaskSelectController(
-            window=self.task_select_window,
+        TaskSelectionController(
+            window=self.task_selection_window,
             task_manager=self.task_manager,
             timer_manager=self.timer_manager,
             reopen_callback=self.open_task_selection_window,
@@ -105,6 +105,9 @@ class AppController:
         os.execl(python, python, *sys.argv)
 
     def exit_app(self) -> None:
+        """
+        Shut down app
+        """
 
         self.root.after(0, self._shutdown)
 
