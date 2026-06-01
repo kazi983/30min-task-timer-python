@@ -135,6 +135,8 @@ class TaskManager:
             A list of Task objects where completed is False.
         """
 
+        self.load_tasks()
+
         return [task for task in self.tasks if not task.completed]
 
     def get_last_selected_tasks(self) -> list[Task]:
@@ -144,6 +146,8 @@ class TaskManager:
         Returns:
             A list of Task objects marked as last_selected.
         """
+
+        self.load_tasks()
 
         return [task for task in self.tasks if task.last_selected]
 
