@@ -35,8 +35,8 @@ class TaskSelectionWindow(tk.Toplevel):
 
         self.geometry(f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}")
 
-        self.delete_callback = None
-        self.complete_callback = None
+        self.on_delete_task = None
+        self.on_complete_task = None
 
         # ========================
         # Title
@@ -170,7 +170,7 @@ class TaskSelectionWindow(tk.Toplevel):
 
         self.task_tree.bind("<Double-1>", self._on_double_click)
 
-        self.display_tasks: list[Task] = []
+        self.tasks: list[Task] = []
 
     def update_task_list(
         self,
@@ -186,7 +186,7 @@ class TaskSelectionWindow(tk.Toplevel):
         for item_id in self.task_tree.get_children():
             self.task_tree.delete(item_id)
 
-        self.display_tasks = tasks
+        self.tasks = tasks
 
         for priority, color in c.PRIORITY_COLORS.items():
 
@@ -249,7 +249,7 @@ class TaskSelectionWindow(tk.Toplevel):
 
         index = int(item_id)
 
-        return self.display_tasks[index]
+        return self.tasks[index]
 
     def set_complete_callback(self, callback):
         """
@@ -259,7 +259,7 @@ class TaskSelectionWindow(tk.Toplevel):
             callback: Function to call when complete is triggered.
         """
 
-        self.complete_callback = callback
+        self.on_complete_task = callback
 
     def set_delete_callback(self, callback):
         """
@@ -268,12 +268,12 @@ class TaskSelectionWindow(tk.Toplevel):
         Args:
             callback: Function to call when delete is triggered.
         """
-        self.delete_callback = callback
+        self.on_delete_task = callback
 
-    def _on_tree_activate(self):
+    def _activate_decide(self):
         self.decide_button.invoke()
 
-    def _on_snooze_activate(self):
+    def _activate_snooze(self):
         self.snooze_button.invoke()
 
     def _on_decide_activate(self):
@@ -283,24 +283,24 @@ class TaskSelectionWindow(tk.Toplevel):
         widget = self.focus_get()
 
         if widget == self.task_tree:
-            self._on_tree_activate()
+            self._activate_decide()
 
         elif widget == self.snooze_button:
-            self._on_snooze_activate()
+            self._activate_snooze()
 
         elif widget == self.decide_button:
             self._on_decide_activate()
 
     def _on_escape(self, _event=None) -> None:
-        self._on_snooze_activate()
+        self._activate_snooze()
 
     def _on_double_click(self, _event=None) -> None:
         self._on_decide_activate()
 
     def _on_backspace(self, _event=None) -> None:
-        if self.complete_callback:
-            self.complete_callback()
+        if self.on_complete_task:
+            self.on_complete_task()
 
     def _on_delete(self, _event=None) -> None:
-        if self.delete_callback:
-            self.delete_callback()
+        if self.on_delete_task:
+            self.on_delete_task()

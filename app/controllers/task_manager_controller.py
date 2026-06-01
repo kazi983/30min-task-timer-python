@@ -53,7 +53,7 @@ class TaskManagerController:
             command=self.on_edit_task_click,
         )
 
-        self.window.open_task_selection_button.config(
+        self.window.back_button.config(
             command=self.on_open_task_selection_button,
         )
 

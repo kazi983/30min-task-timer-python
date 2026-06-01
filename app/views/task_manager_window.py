@@ -38,8 +38,8 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.geometry(f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}")
 
-        self.delete_callback = None
-        self.complete_callback = None
+        self.on_delete_task = None
+        self.on_complete_task = None
 
         # ========================
         # Title
@@ -182,12 +182,12 @@ class TaskManagerWindow(tk.Toplevel):
             padx=10,
         )
 
-        self.open_task_selection_button = ttk.Button(
+        self.back_button = ttk.Button(
             self.button_frame_bottom,
             text="戻る",
         )
 
-        self.open_task_selection_button.pack(
+        self.back_button.pack(
             side=tk.LEFT,
             padx=5,
         )
@@ -205,7 +205,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         self.task_tree.bind("<<TreeviewSelect>>", self._on_select_task_tree)
 
-        self.display_tasks: list[Task] = []
+        self.tasks: list[Task] = []
 
         self.new_task_box.focus_set()
 
@@ -223,7 +223,7 @@ class TaskManagerWindow(tk.Toplevel):
         for item_id in self.task_tree.get_children():
             self.task_tree.delete(item_id)
 
-        self.display_tasks = tasks
+        self.tasks = tasks
 
         for priority, color in c.PRIORITY_COLORS.items():
 
@@ -291,7 +291,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         index = int(selection[0])
 
-        return self.display_tasks[index]
+        return self.tasks[index]
 
     def set_complete_callback(self, callback):
         """
@@ -301,7 +301,7 @@ class TaskManagerWindow(tk.Toplevel):
             callback: Function to call when complete is triggered.
         """
 
-        self.complete_callback = callback
+        self.on_complete_task = callback
 
     def set_delete_callback(self, callback):
         """
@@ -311,13 +311,13 @@ class TaskManagerWindow(tk.Toplevel):
             callback: Function to call when delete is triggered.
         """
 
-        self.delete_callback = callback
+        self.on_delete_task = callback
 
     def _on_edit_activate(self):
         self.edit_button.invoke()
 
     def _on_back_to_selection_activate(self):
-        self.open_task_selection_button.invoke()
+        self.back_button.invoke()
 
     def _on_add_activate(self):
         self.add_button.invoke()
@@ -328,7 +328,7 @@ class TaskManagerWindow(tk.Toplevel):
         if widget == self.task_tree:
             self._on_edit_activate()
 
-        elif widget == self.open_task_selection_button:
+        elif widget == self.back_button:
             self._on_back_to_selection_activate()
 
         elif widget == self.add_button:
@@ -341,12 +341,12 @@ class TaskManagerWindow(tk.Toplevel):
         self._on_back_to_selection_activate()
 
     def _on_backspace(self, _event=None) -> None:
-        if self.complete_callback:
-            self.complete_callback()
+        if self.on_complete_task:
+            self.on_complete_task()
 
     def _on_delete(self, _event=None) -> None:
-        if self.delete_callback:
-            self.delete_callback()
+        if self.on_delete_task:
+            self.on_delete_task()
 
     def _on_select_task_tree(self, _event=None) -> None:
         selection = self.task_tree.selection()
@@ -356,7 +356,7 @@ class TaskManagerWindow(tk.Toplevel):
 
         index = int(selection[0])
 
-        task = self.display_tasks[index]
+        task = self.tasks[index]
 
         self.new_task_box.delete(0, tk.END)
         self.new_task_box.insert(0, task.name)
