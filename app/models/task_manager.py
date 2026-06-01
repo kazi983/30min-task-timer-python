@@ -194,4 +194,4 @@ class TaskManager:
             ]
 
         except (json.JSONDecodeError, IOError) as error:
-            raise RuntimeError(f"読み込みエラー: {error}")
+            raise RuntimeError(f"読み込みエラー: {error}") from error

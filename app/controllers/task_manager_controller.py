@@ -124,9 +124,11 @@ class TaskManagerController:
 
             message = "更新しますか？"
             if selected_task.name != input_value["name"]:
-                message += f"\n\t{selected_task.name}\t ➤ {input_value['name']}"
+                message += f"\n\t{selected_task.name}\t \
+                    ➤ {input_value['name']}"
             if selected_task.priority != input_value["priority"]:
-                message += f"\n\t{selected_task.priority}\t ➤ {input_value['priority']}"
+                message += f"\n\t{selected_task.priority}\t \
+                    ➤ {input_value['priority']}"
 
             if not messagebox.askokcancel(
                 "タスク完了",
