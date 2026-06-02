@@ -58,7 +58,7 @@ class TaskPickerView(tk.Toplevel):
             text="今から何をやる？",
             font=(c.FONT_FAMILY, 20, "bold"),
             bg=_UIColors.BG,
-            fg="white",
+            fg=_UIColors.BASE,
         )
         self.title_label.pack(pady=(50, 5))
 
@@ -85,6 +85,8 @@ class TaskPickerView(tk.Toplevel):
             highlightthickness=1,
             highlightbackground=_UIColors.ACCENT_DARK,
             highlightcolor=_UIColors.ACCENT,
+            bg="#31394d",
+            fg="#fafafa",
             width=35,
         )
         self.task_input.pack(side=tk.LEFT, padx=6, ipady=6)
@@ -93,10 +95,9 @@ class TaskPickerView(tk.Toplevel):
             input_frame,
             text="+ 追加",
             bg=_UIColors.ACCENT,
-            fg="white",
+            fg=_UIColors.TEXT_SUB_B,
             relief="flat",
-            activebackground=_UIColors.ACCENT,
-            activeforeground="white",
+            activebackground=_UIColors.SELECT_BG,
             padx=12,
             pady=6,
         )
@@ -115,13 +116,13 @@ class TaskPickerView(tk.Toplevel):
             activestyle="none",
             width=45,
             height=15,
-            bg=_UIColors.CARD,
+            bg="#131b2e",
             fg=_UIColors.BASE,
             relief="flat",
-            highlightthickness=1,
-            highlightbackground=_UIColors.SELECT_BG,
-            selectbackground=_UIColors.SELECT_BG,
-            selectforeground=_UIColors.BASE,
+            highlightthickness=0,
+            highlightbackground="#adc6ff",
+            selectbackground="#adc6ff",
+            selectforeground="black",
             selectborderwidth=0,
         )
         self.task_listbox.pack()
@@ -137,8 +138,8 @@ class TaskPickerView(tk.Toplevel):
         self.start_button = tk.Button(
             bottom_frame,
             text="▶ はじめる",
-            bg=_UIColors.BG,
-            fg="white",
+            bg=_UIColors.ACCENT,
+            fg=_UIColors.TEXT_SUB_B,
             font=(c.FONT_FAMILY, 11, "bold"),
             relief="flat",
             padx=18,

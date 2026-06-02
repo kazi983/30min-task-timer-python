@@ -84,7 +84,7 @@ class TaskPickerController:
         self.window.task_input.delete(0, "end")
 
         tasks = self.task_service.get_incomplete_tasks()
-        self.refresh_task_list
+        self.refresh_task_list()
 
         for i, task in enumerate(tasks):
             if task.id == new_task.id:
