@@ -34,6 +34,7 @@ class Task:
 
     id: str
     name: str
+    memo: str = ""
     completed: bool = False
     priority: str = "なし"
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
@@ -62,8 +63,9 @@ class Task:
         return Task(
             id=data.get("id", str(uuid.uuid4())),
             name=data["name"],
+            memo=data.get("memo", ""),
             completed=data.get("completed", False),
-            priority=data.get("priority", "なし"),
+            priority=data.get("priority", ""),
             created_at=created_at,
             last_selected=data.get("last_selected", False),
             deleted=data.get("deleted", False),
@@ -79,6 +81,7 @@ class Task:
         return {
             "id": self.id,
             "name": self.name,
+            "memo": self.memo,
             "completed": self.completed,
             "priority": self.priority,
             "created_at": self.created_at.isoformat(),

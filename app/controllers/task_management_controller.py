@@ -46,19 +46,24 @@ class TaskManagementController:
         self.refresh_task_list()
 
         self.window.add_button.config(
-            command=self.on_add_task_click,
+            command=self.on_add_task,
+        )
+
+        self.window.complete_button.config(
+            command=self.on_complete_task,
+        )
+
+        self.window.delete_button.config(
+            command=self.on_delete_task,
         )
 
         self.window.edit_button.config(
-            command=self.on_edit_task_click,
+            command=self.on_edit_task,
         )
 
         self.window.back_button.config(
-            command=self.on_open_task_picker_button,
+            command=self.on_open_task_picker,
         )
-
-        self.window.set_complete_callback(self.on_complete_task)
-        self.window.set_delete_callback(self.on_delete_task)
 
     def refresh_task_list(self) -> None:
         """
@@ -67,11 +72,11 @@ class TaskManagementController:
         Fetches incomplete tasks from TaskService and updates the view.
         """
 
-        tasks = self.task_service.get_incomplete_tasks()
+        tasks = self.task_service.get_all_tasks()
 
         self.window.update_task_list(tasks)
 
-    def on_open_task_picker_button(self) -> None:
+    def on_open_task_picker(self) -> None:
         """
         Close current window and return to task picker screen.
         """
@@ -80,7 +85,7 @@ class TaskManagementController:
 
         self.open_task_picker_callback()
 
-    def on_add_task_click(self) -> None:
+    def on_add_task(self) -> None:
         """
         Create a new task from user input and refresh the task list.
 
@@ -101,7 +106,7 @@ class TaskManagementController:
 
         self.refresh_task_list()
 
-    def on_edit_task_click(self) -> None:
+    def on_edit_task(self) -> None:
         """
         Edit selected task with new values from input fields.
 
@@ -124,10 +129,10 @@ class TaskManagementController:
 
             message = "更新しますか？"
             if selected_task.name != input_value["name"]:
-                message += f"\n\t{selected_task.name} \
+                message += f"\n  {selected_task.name} \
                     ➤ {input_value['name']}"
             if selected_task.priority != input_value["priority"]:
-                message += f"\{selected_task.priority} \
+                message += f"\n  {selected_task.priority} \
                     ➤ {input_value['priority']}"
 
             if not messagebox.askokcancel(

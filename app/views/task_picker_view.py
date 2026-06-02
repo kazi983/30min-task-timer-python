@@ -1,11 +1,30 @@
-# app/views/task_picker_view.py
+"""
+app/views/task_picker_view.py
+"""
 
 import tkinter as tk
-from tkinter import ttk
+from collections.abc import Callable
 
 from app.models.task import Task
 import app.config.constants as c
-from collections.abc import Callable
+
+
+class _UIColors:
+    # base
+    BG = "#0b1326"
+    CARD = "#ffffff"
+    BORDER = "#5e85b1"
+
+    BASE = "#dae2fd"
+
+    TEXT_SUB = "#6b7280"
+    TEXT_SUB_B = "#00285d"
+
+    # accent
+    ACCENT = "#4d8eff"  # modern blue
+    ACCENT_DARK = "#2d3449"
+
+    SELECT_BG = "#e0f2fe"
 
 
 class TaskPickerView(tk.Toplevel):
@@ -19,164 +38,151 @@ class TaskPickerView(tk.Toplevel):
     controller.
     """
 
-    def __init__(
-        self,
-        root: tk.Tk,
-    ) -> None:
-
+    def __init__(self, root: tk.Tk) -> None:
         super().__init__(root)
 
-        self._setup_view(
-            title="タスク選択", geometry=f"{c.WINDOW_WIDTH}x{c.WINDOW_HEIGHT}"
-        )
+        self.title("Quick Start")
 
-        self.on_delete_task = None
-        self.on_complete_task = None
+        self._setup_view()
 
-        # ========================
-        # Title
-        # ========================
-
-        title_label = ttk.Label(
-            self,
-            text="次のタスクを選択してください",
-        )
-        title_label.pack(pady=10)
-
-        # ========================
-        # Treeview
-        # ========================
-
-        columns = ("priority", "name", "created_at")
-
-        self.task_tree = ttk.Treeview(
-            self,
-            columns=columns,
-            show="headings",
-            height=10,
-        )
-
-        self.task_tree.heading(
-            "priority",
-            text="優先度",
-        )
-
-        self.task_tree.heading("name", text="タスク")
-
-        self.task_tree.heading(
-            "created_at",
-            text="作成日時",
-        )
-
-        self.task_tree.column(
-            "priority",
-            width=c.TR_WIDTH_PRIORITY,
-            anchor=tk.CENTER,
-        )
-
-        self.task_tree.column(
-            "name",
-            width=c.TR_WIDTH_NAME,
-        )
-
-        self.task_tree.column(
-            "created_at",
-            width=c.TR_WIDTH_DATE,
-        )
-
-        self.task_tree.pack(
-            fill=tk.BOTH,
-            expand=True,
-            padx=20,
-            pady=10,
-        )
-
-        for priority, color in c.PRIORITY_COLORS.items():
-            self.task_tree.tag_configure(
-                priority,
-                background=color,
-            )
-
-        # ========================
-        # scrollbar
-        # ========================
-
-        scrollbar = ttk.Scrollbar(
-            self,
-            orient=tk.VERTICAL,
-            command=self.task_tree.yview,
-        )
-
-        self.task_tree.configure(
-            yscrollcommand=scrollbar.set,
-        )
-
-        scrollbar.pack(
-            side=tk.RIGHT,
-            fill=tk.Y,
-        )
-
-        # ========================
-        # buttons
-        # ========================
-
-        button_frame_main = ttk.Frame(self)
-        button_frame_sub = ttk.Frame(self)
-
-        button_frame_main.pack(pady=10, before=self.task_tree)
-        button_frame_sub.pack(pady=10)
-
-        self.snooze_button = ttk.Button(
-            button_frame_sub,
-            text="5分後再通知",
-        )
-
-        self.snooze_button.pack(
-            side=tk.LEFT,
-            padx=5,
-        )
-
-        self.confirm_button = ttk.Button(
-            button_frame_main,
-            text="決定",
-        )
-
-        self.confirm_button.pack(
-            side=tk.LEFT,
-            padx=30,
-        )
-
-        self.task_management_button = ttk.Button(
-            button_frame_sub,
-            text="管理画面",
-        )
-
-        self.task_management_button.pack(
-            side=tk.LEFT,
-            padx=5,
-        )
-
-        # ========================
-        # bind
-        # ========================
-        self.task_tree.bind("<Return>", self._on_enter)
-        self.task_tree.bind("<BackSpace>", self._on_backspace)
-        self.task_tree.bind("<Delete>", self._on_delete)
-
-        self.snooze_button.bind("<Return>", self._on_enter)
-
-        self.confirm_button.bind("<Return>", self._on_enter)
-
-        self.bind("<Escape>", self._on_escape)
-
-        self.task_tree.bind("<Double-1>", self._on_double_click)
+        self.on_complete_task: Callable | None = None
 
         self.tasks: list[Task] = []
 
-    def update_task_list(
-        self,
-        tasks: list[Task],
-    ) -> None:
+        # =========================
+        # Header
+        # =========================
+
+        self.title_label = tk.Label(
+            self,
+            text="今から何をやる？",
+            font=(c.FONT_FAMILY, 20, "bold"),
+            bg=_UIColors.BG,
+            fg="white",
+        )
+        self.title_label.pack(pady=(50, 5))
+
+        self.last_selected_label = tk.Label(
+            self,
+            text="",
+            font=(c.FONT_FAMILY, 11),
+            bg=_UIColors.BG,
+            fg=_UIColors.TEXT_SUB,
+        )
+        self.last_selected_label.pack(pady=(0, 10))
+
+        # =========================
+        # Input
+        # =========================
+
+        input_frame = tk.Frame(self, bg=_UIColors.BG)
+        input_frame.pack(pady=10)
+
+        self.task_input = tk.Entry(
+            input_frame,
+            font=(c.FONT_FAMILY, 12),
+            relief="flat",
+            highlightthickness=1,
+            highlightbackground=_UIColors.ACCENT_DARK,
+            highlightcolor=_UIColors.ACCENT,
+            width=35,
+        )
+        self.task_input.pack(side=tk.LEFT, padx=6, ipady=6)
+
+        self.add_button = tk.Button(
+            input_frame,
+            text="+ 追加",
+            bg=_UIColors.ACCENT,
+            fg="white",
+            relief="flat",
+            activebackground=_UIColors.ACCENT,
+            activeforeground="white",
+            padx=12,
+            pady=6,
+        )
+        self.add_button.pack(side=tk.LEFT)
+
+        # =========================
+        # Listbox
+        # =========================
+
+        list_frame = tk.Frame(self, bg=_UIColors.BG)
+        list_frame.pack(pady=15)
+
+        self.task_listbox = tk.Listbox(
+            list_frame,
+            font=(c.FONT_FAMILY, 12),
+            activestyle="none",
+            width=45,
+            height=15,
+            bg=_UIColors.CARD,
+            fg=_UIColors.BASE,
+            relief="flat",
+            highlightthickness=1,
+            highlightbackground=_UIColors.SELECT_BG,
+            selectbackground=_UIColors.SELECT_BG,
+            selectforeground=_UIColors.BASE,
+            selectborderwidth=0,
+        )
+        self.task_listbox.pack()
+
+        # =========================
+        # Buttons
+        # =========================
+
+        bottom_frame = tk.Frame(self, bg=_UIColors.BG)
+        bottom_frame.pack(pady=18)
+
+        # primary
+        self.start_button = tk.Button(
+            bottom_frame,
+            text="▶ はじめる",
+            bg=_UIColors.BG,
+            fg="white",
+            font=(c.FONT_FAMILY, 11, "bold"),
+            relief="flat",
+            padx=18,
+            pady=10,
+            activebackground=_UIColors.SELECT_BG,
+        )
+        self.start_button.pack(pady=(0, 10))
+
+        # secondary row
+        sub_frame = tk.Frame(bottom_frame, bg=_UIColors.BG)
+        sub_frame.pack()
+
+        self.snooze_button = self.secondary_button(sub_frame, "あとで")
+        self.snooze_button.pack(side=tk.LEFT, padx=8)
+
+        self.management_button = self.secondary_button(sub_frame, "編集")
+        self.management_button.pack(side=tk.LEFT, padx=8)
+
+        # =========================
+        # bindings
+        # =========================
+
+        self.bind("<Escape>", lambda e: self.snooze_button.invoke())
+
+        self.task_input.bind(
+            "<Return>",
+            lambda e: self.add_button.invoke(),
+        )
+
+        self.task_listbox.bind(
+            "<BackSpace>",
+            lambda e: self.on_complete_task,
+        )
+
+        self.task_listbox.bind(
+            "<Double-1>",
+            lambda e: self.start_button.invoke(),
+        )
+
+    # =========================
+    # API
+    # =========================
+
+    def update_task_list(self, tasks: list[Task]) -> None:
         """
         Refresh the task list displayed in the Treeview.
 
@@ -184,41 +190,47 @@ class TaskPickerView(tk.Toplevel):
             tasks: A list of Task objects to display.
         """
 
-        for item_id in self.task_tree.get_children():
-            self.task_tree.delete(item_id)
-
         self.tasks = tasks
 
-        selected_item_id = None
-        for index, task in enumerate(tasks):
-            iid_str = str(index)
+        self.task_listbox.delete(0, tk.END)
 
-            tags = (task.priority,)
-            if task.completed:
-                tags += ("completed",)
+        selected_index = 0
+        last_task_name = ""
 
-            self.task_tree.insert(
-                "",
+        for i, task in enumerate(tasks):
+
+            prefix = ""
+            if task.priority == "NOW":
+                prefix = " 🔥 "
+            elif task.priority == "SOONER":
+                prefix = " ⭐ "
+            elif task.priority == "ANYTIME":
+                prefix = " 📝 "
+
+            self.task_listbox.insert(
                 tk.END,
-                iid=iid_str,
-                values=(
-                    task.priority,
-                    task.name,
-                    task.created_local(),
-                ),
-                tags=tags,
+                f"{prefix}{task.name}",
             )
-            if selected_item_id is None and task.last_selected:
-                selected_item_id = iid_str
 
-        if selected_item_id is None and tasks:
-            selected_item_id = tasks[0].id
+            if task.last_selected:
+                selected_index = i
+                last_task_name = task.name
 
-        self.task_tree.selection_set(selected_item_id)
-        self.task_tree.focus(selected_item_id)
-        self.task_tree.see(selected_item_id)
+        if tasks:
+            self.task_listbox.selection_set(selected_index)
+            self.task_listbox.activate(selected_index)
+            self.task_listbox.see(selected_index)
 
-        self.task_tree.focus_set()
+        if last_task_name:
+            self.last_selected_label.config(text=f"前回の続き: {last_task_name}")
+
+        self.task_input.focus_set()
+
+    def select_task_by_index(self, index: int) -> None:
+        self.task_listbox.selection_clear(0, tk.END)
+        self.task_listbox.selection_set(index)
+        self.task_listbox.activate(index)
+        self.task_listbox.see(index)
 
     def get_selected_task(self) -> Task | None:
         """
@@ -228,71 +240,44 @@ class TaskPickerView(tk.Toplevel):
             The selected Task object, or None if nothing is selected.
         """
 
-        selection = self.task_tree.selection()
-
+        selection = self.task_listbox.curselection()
         if not selection:
             return None
+        return self.tasks[selection[0]]
 
-        item_id = selection[0]
+    def secondary_button(self, parent, text):
+        return tk.Button(
+            parent,
+            text=text,
+            bg=_UIColors.ACCENT_DARK,
+            fg=_UIColors.BASE,
+            relief="flat",
+            font=(c.FONT_FAMILY, 10),
+            padx=16,
+            pady=8,
+            width=8,  # ← 幅固定
+            activebackground=_UIColors.SELECT_BG,
+        )
 
-        index = int(item_id)
-
-        return self.tasks[index]
-
-    def set_complete_callback(self, callback):
-        """
-        Set callback for complete action.
-
-        Args:
-            callback: Function to call when complete is triggered.
-        """
-
+    def set_complete_callback(self, callback: Callable):
         self.on_complete_task = callback
 
-    def set_delete_callback(self, callback: Callable[[], None]):
-        """
-        Set callback for delete action.
+    def _setup_view(self) -> None:
 
-        Args:
-            callback: Function to call when delete is triggered.
-        """
-        self.on_delete_task = callback
+        self.configure(bg=_UIColors.BG)
 
-    def _activate_decide(self):
-        self.confirm_button.invoke()
+        self.overrideredirect(True)
 
-    def _activate_snooze(self):
-        self.snooze_button.invoke()
-
-    def _on_enter(self, _event=None) -> None:
-        widget = self.focus_get()
-
-        if widget == self.task_tree:
-            self._activate_decide()
-
-        elif widget == self.snooze_button:
-            self._activate_snooze()
-
-        elif widget == self.confirm_button:
-            self._activate_decide()
-
-    def _on_escape(self, _event=None) -> None:
-        self._activate_snooze()
-
-    def _on_double_click(self, _event=None) -> None:
-        self._activate_decide()
-
-    def _on_backspace(self, _event=None) -> None:
-        if self.on_complete_task:
-            self.on_complete_task()
-
-    def _on_delete(self, _event=None) -> None:
-        if self.on_delete_task:
-            self.on_delete_task()
-
-    def _setup_view(self, title: str, geometry: str) -> None:
         self.attributes("-topmost", True)
         self.lift()
         self.focus_force()
-        self.title(title)
-        self.geometry(geometry)
+
+        self.update_idletasks()
+
+        w = c.WINDOW_WIDTH
+        h = c.WINDOW_HEIGHT
+
+        x = (self.winfo_screenwidth() // 2) - (w // 2)
+        y = (self.winfo_screenheight() // 2) - (h // 2)
+
+        self.geometry(f"{w}x{h}+{x}+{y}")

@@ -42,87 +42,74 @@ class TaskPickerController:
     ) -> None:
 
         self.window = window
-
         self.task_service = task_service
-
         self.timer_service = timer_service
-
         self.reopen_callback = reopen_callback
         self.open_task_management_callback = open_task_management_callback
 
         self.refresh_task_list()
 
-        self.window.task_management_button.config(
-            command=self.on_open_task_management_button,
-        )
+        # buttons
+        self.window.add_button.config(command=self.on_add_task)
+        self.window.start_button.config(command=self.on_start)
+        self.window.snooze_button.config(command=self.on_snooze)
+        self.window.management_button.config(command=self.on_open_management)
 
-        self.window.snooze_button.config(
-            command=self.on_snooze_click,
-        )
-
-        self.window.confirm_button.config(
-            command=self.on_confirm_click,
-        )
-
+        # optional callbacks
         self.window.set_complete_callback(self.on_complete_task)
 
-    def refresh_task_list(self) -> None:
-        """
-        Refresh the task list in the picker view.
+    # =========================
+    # data
+    # =========================
 
-        Loads incomplete tasks from TaskService and updates the UI.
-        """
-
+    def refresh_task_list(self):
         tasks = self.task_service.get_incomplete_tasks()
-
         self.window.update_task_list(tasks)
 
-    def on_open_task_management_button(self) -> None:
-        """
-        Close picker window and open task management view.
-        """
+    # =========================
+    # actions
+    # =========================
 
-        self.window.destroy()
+    def on_add_task(self):
+        name = self.window.task_input.get().strip()
 
-        self.open_task_management_callback()
-
-    def on_snooze_click(self) -> None:
-        """
-        Temporarily close the window and reopen it after a delay.
-        """
-
-        self.window.destroy()
-
-        self.timer_service.schedule(
-            c.TIME_MS_SNOOZE,
-            self.reopen_callback,
-        )
-
-    def on_confirm_click(self) -> None:
-        """
-        Confirm task picker and mark it as last selected.
-
-        If confirmed, the window is closed and will reopen after a delay.
-        """
-
-        selected_task = self.window.get_selected_task()
-
-        if not selected_task:
-
-            messagebox.showwarning(
-                "未選択", "タスクを選択してください", parent=self.window
-            )
-
+        if not name:
             return
 
-        if selected_task:
+        new_task = self.task_service.add_task(
+            text=name,
+            priority="NOW",
+        )
 
-            if not messagebox.askokcancel(
-                "選択完了", f"{selected_task.name} を開始しますか？", parent=self.window
-            ):
-                return
+        self.window.task_input.delete(0, "end")
 
-        self.task_service.mark_task_as_last_selected(selected_task)
+        tasks = self.task_service.get_incomplete_tasks()
+        self.refresh_task_list
+
+        for i, task in enumerate(tasks):
+            if task.id == new_task.id:
+                self.window.select_task_by_index(i)
+                break
+
+    def on_start(self):
+        task = self.window.get_selected_task()
+
+        if not task:
+            messagebox.showwarning(
+                "未選択",
+                "タスクを選んでください",
+                parent=self.window,
+            )
+            return
+
+        if not messagebox.askokcancel(
+            "開始",
+            f"{task.name} を開始しますか？",
+            parent=self.window,
+        ):
+            return
+
+        self.task_service.mark_task_as_last_selected(task)
 
         self.window.destroy()
 
@@ -131,25 +118,30 @@ class TaskPickerController:
             self.reopen_callback,
         )
 
-    def on_complete_task(self) -> None:
-        """
-        Mark the selected task as completed after user confirmation.
-        """
+    def on_snooze(self):
+        self.window.destroy()
 
-        selected_task = self.window.get_selected_task()
+        self.timer_service.schedule(
+            c.TIME_MS_SNOOZE,
+            self.reopen_callback,
+        )
 
-        if not selected_task:
+    def on_open_management(self):
+        self.window.destroy()
+        self.open_task_management_callback()
+
+    def on_complete_task(self):
+        task = self.window.get_selected_task()
+
+        if not task:
             return
 
-        if selected_task:
+        if not messagebox.askokcancel(
+            "完了",
+            f"{task.name} を完了にしますか？",
+            parent=self.window,
+        ):
+            return
 
-            if not messagebox.askokcancel(
-                "タスク完了",
-                f"{selected_task.name} を完了済みタスクに登録しますか？",
-                parent=self.window,
-            ):
-                return
-
-        self.task_service.mark_task_as_complete(selected_task)
-
+        self.task_service.mark_task_as_complete(task)
         self.refresh_task_list()

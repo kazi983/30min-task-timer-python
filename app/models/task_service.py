@@ -142,6 +142,18 @@ class TaskService:
 
             raise IOError(f"タスクの保存に失敗: {error}") from error
 
+    def get_all_tasks(self) -> list[Task]:
+        """
+        Get all tasks.
+
+        Returns:
+            A list of Task objects.
+        """
+
+        self.load_tasks()
+
+        return [task for task in self.tasks]
+
     def get_incomplete_tasks(self) -> list[Task]:
         """
         Get all tasks that are not completed.
