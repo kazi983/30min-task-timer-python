@@ -170,6 +170,11 @@ class TaskPickerView(tk.Toplevel):
         )
 
         self.task_listbox.bind(
+            "<Return>",
+            lambda e: self.start_button.invoke(),
+        )
+
+        self.task_listbox.bind(
             "<BackSpace>",
             lambda e: self.on_complete_task,
         )
