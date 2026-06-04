@@ -125,6 +125,8 @@ class TaskService:
 
     def record_session(self, session_result: SessionResult) -> None:
 
+        if session_result is None:
+            return
         for t in self.tasks:
             if t.id == session_result.task_id:
                 t.completed_sessions += 1

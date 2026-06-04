@@ -21,6 +21,7 @@ from app.models.task_service import TaskService
 from app.models.timer_service import TimerService
 from app.models.session_service import SessionService
 
+from app.views.session_interrupt_overlay import SessionInterruptOverlay
 from app.views.task_picker_view import TaskPickerView
 from app.views.task_management_view import TaskManagementView
 
@@ -69,6 +70,10 @@ class AppController:
 
         self.session_service = SessionService()
 
+        self.interrupt_overlay = SessionInterruptOverlay(
+            command=self.complete_work_session
+        )
+
         self.task_picker_view = None
         self.task_management_view = None
 
@@ -87,6 +92,8 @@ class AppController:
         self.open_task_picker_view()
 
     def complete_work_session(self) -> None:
+
+        self.interrupt_overlay.hide()
 
         self.task_service.record_session(self.session_service.finish())
 
@@ -113,6 +120,7 @@ class AppController:
             session_service=self.session_service,
             reopen_callback=self.complete_work_session,
             open_task_management_callback=self.open_task_management_view,
+            interrupt_overlay=self.interrupt_overlay,
         )
 
     def open_task_management_view(self) -> None:
@@ -125,9 +133,7 @@ class AppController:
         if self.task_management_view:
             self.task_management_view.destroy()
 
-        self.task_management_view = TaskManagementView(
-            root=self.root,
-        )
+        self.task_management_view = TaskManagementView(root=self.root)
 
         TaskManagementController(
             window=self.task_management_view,

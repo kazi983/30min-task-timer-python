@@ -42,6 +42,7 @@ class TaskPickerController:
         session_service: SessionService,
         reopen_callback,
         open_task_management_callback,
+        interrupt_overlay,
     ) -> None:
 
         self.window = window
@@ -50,6 +51,7 @@ class TaskPickerController:
         self.session_service = session_service
         self.reopen_callback = reopen_callback
         self.open_task_management_callback = open_task_management_callback
+        self.interrupt_overlay = interrupt_overlay
         self._current_task_id = None
         self._started_at = None
 
@@ -57,7 +59,7 @@ class TaskPickerController:
 
         # buttons
         self.window.add_button.config(command=self.on_add_task)
-        self.window.start_button.config(command=self.on_start)
+        self.window.start_button.config(command=self.on_start_session)
         self.window.snooze_button.config(command=self.on_snooze)
         self.window.management_button.config(command=self.on_open_management)
 
@@ -97,7 +99,7 @@ class TaskPickerController:
                 self.window.select_task_by_index(i)
                 break
 
-    def on_start(self):
+    def on_start_session(self):
         task = self.window.get_selected_task()
 
         if not task:
@@ -119,9 +121,9 @@ class TaskPickerController:
 
         self.window.destroy()
 
-        print("------task.id-----")
-        print(task.id)
         self.session_service.start(task.id)
+
+        self.interrupt_overlay.show()
 
         self.timer_service.schedule(
             c.TIME_MS_INTERVAL,
