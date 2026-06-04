@@ -18,8 +18,8 @@ import tkinter.font as tkfont
 from pathlib import Path
 
 from app.models.task_service import TaskService
-
 from app.models.timer_service import TimerService
+from app.models.session_service import SessionService
 
 from app.views.task_picker_view import TaskPickerView
 from app.views.task_management_view import TaskManagementView
@@ -65,9 +65,9 @@ class AppController:
 
         self.task_service = TaskService(Path(TASK_DATA_FILE))
 
-        self.timer_service = TimerService(
-            root,
-        )
+        self.timer_service = TimerService(root)
+
+        self.session_service = SessionService()
 
         self.task_picker_view = None
         self.task_management_view = None
@@ -83,6 +83,12 @@ class AppController:
         """
         Start the application by opening the initial window.
         """
+
+        self.open_task_picker_view()
+
+    def complete_work_session(self) -> None:
+
+        self.task_service.record_session(self.session_service.finish())
 
         self.open_task_picker_view()
 
@@ -104,7 +110,8 @@ class AppController:
             window=self.task_picker_view,
             task_service=self.task_service,
             timer_service=self.timer_service,
-            reopen_callback=self.open_task_picker_view,
+            session_service=self.session_service,
+            reopen_callback=self.complete_work_session,
             open_task_management_callback=self.open_task_management_view,
         )
 
@@ -133,6 +140,8 @@ class AppController:
         Restart the application by re-executing the current Python process.
         """
 
+        self.task_service.record_session(self.session_service.finish())
+
         python = sys.executable
 
         os.execl(python, python, *sys.argv)
@@ -142,6 +151,8 @@ class AppController:
         Request application shutdown via Tkinter event loop.
         """
 
+        self.task_service.record_session(self.session_service.finish())
+
         self.root.after(0, self._shutdown)
 
     def _shutdown(self) -> None:
@@ -150,6 +161,8 @@ class AppController:
 
         Stops the Tkinter event loop and destroys root window.
         """
+
+        self.task_service.record_session(self.session_service.finish())
 
         self.root.quit()
 

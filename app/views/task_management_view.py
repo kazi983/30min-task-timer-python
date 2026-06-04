@@ -101,7 +101,14 @@ class TaskManagementView(tk.Toplevel):
 
         self.task_tree = ttk.Treeview(
             table_card,
-            columns=("completed", "priority", "name", "memo", "created_at"),
+            columns=(
+                "completed",
+                "priority",
+                "name",
+                "memo",
+                "total_minutes",
+                "created_at",
+            ),
             show="headings",
             height=11,
         )
@@ -110,12 +117,14 @@ class TaskManagementView(tk.Toplevel):
         self.task_tree.heading("priority", text="優先度")
         self.task_tree.heading("name", text="タスク")
         self.task_tree.heading("memo", text="メモ")
+        self.task_tree.heading("total_minutes", text="時間")
         self.task_tree.heading("created_at", text="作成日")
 
         self.task_tree.column("completed", width=40, anchor="center")
         self.task_tree.column("priority", width=80, anchor="center")
         self.task_tree.column("name", width=300)
-        self.task_tree.column("memo", width=600)
+        self.task_tree.column("memo", width=500)
+        self.task_tree.column("total_minutes", width=40)
         self.task_tree.column("created_at", width=110, anchor="center")
 
         self.task_tree.pack(fill="both", expand=True, padx=8, pady=8)
@@ -293,6 +302,7 @@ class TaskManagementView(tk.Toplevel):
                     task.priority,
                     task.name,
                     task.memo,
+                    task.total_minutes,
                     task.created_local(),
                 ),
                 tags=tags,

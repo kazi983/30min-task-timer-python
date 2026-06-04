@@ -37,6 +37,8 @@ class Task:
     memo: str = ""
     completed: bool = False
     priority: str = "なし"
+    total_minutes: int = 0
+    completed_sessions: int = 0
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     last_selected: bool = False
     deleted: bool = False
@@ -66,6 +68,8 @@ class Task:
             memo=data.get("memo", ""),
             completed=data.get("completed", False),
             priority=data.get("priority", ""),
+            total_minutes=data.get("total_minutes", 0),
+            completed_sessions=data.get("completed_sessions", 0),
             created_at=created_at,
             last_selected=data.get("last_selected", False),
             deleted=data.get("deleted", False),
@@ -84,6 +88,8 @@ class Task:
             "memo": self.memo,
             "completed": self.completed,
             "priority": self.priority,
+            "total_minutes": self.total_minutes,
+            "completed_sessions": self.completed_sessions,
             "created_at": self.created_at.isoformat(),
             "last_selected": self.last_selected,
             "deleted": self.deleted,

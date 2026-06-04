@@ -15,8 +15,10 @@ It coordinates between TaskPickerView, TaskService, and TimerService.
 from tkinter import messagebox
 
 import app.config.constants as c
+from app.models.session_service import SessionService
 from app.views.task_picker_view import TaskPickerView
 from app.models.task_service import TaskService
+from app.models.timer_service import TimerService
 
 
 class TaskPickerController:
@@ -36,7 +38,8 @@ class TaskPickerController:
         self,
         window: TaskPickerView,
         task_service: TaskService,
-        timer_service,
+        timer_service: TimerService,
+        session_service: SessionService,
         reopen_callback,
         open_task_management_callback,
     ) -> None:
@@ -44,8 +47,11 @@ class TaskPickerController:
         self.window = window
         self.task_service = task_service
         self.timer_service = timer_service
+        self.session_service = session_service
         self.reopen_callback = reopen_callback
         self.open_task_management_callback = open_task_management_callback
+        self._current_task_id = None
+        self._started_at = None
 
         self.refresh_task_list()
 
@@ -112,6 +118,10 @@ class TaskPickerController:
         self.task_service.mark_task_as_last_selected(task)
 
         self.window.destroy()
+
+        print("------task.id-----")
+        print(task.id)
+        self.session_service.start(task.id)
 
         self.timer_service.schedule(
             c.TIME_MS_INTERVAL,

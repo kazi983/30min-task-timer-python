@@ -12,7 +12,6 @@ It acts as a mediator between UI events and application business logic.
 
 from tkinter import messagebox
 
-import app.config.constants as c
 from app.views.task_management_view import TaskManagementView
 from app.models.task_service import TaskService
 

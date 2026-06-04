@@ -18,6 +18,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 import json
 
+from app.models.session_service import SessionResult
 from app.models.task import Task
 import uuid
 
@@ -119,6 +120,15 @@ class TaskService:
             t.last_selected = False
 
         task.last_selected = True
+
+        self.save_tasks()
+
+    def record_session(self, session_result: SessionResult) -> None:
+
+        for t in self.tasks:
+            if t.id == session_result.task_id:
+                t.completed_sessions += 1
+                t.total_minutes += session_result.elapsed_minutes
 
         self.save_tasks()
 
