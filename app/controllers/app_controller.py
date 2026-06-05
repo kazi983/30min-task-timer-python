@@ -113,6 +113,8 @@ class AppController:
             root=self.root,
         )
 
+        self.interrupt_overlay.hide()
+
         TaskPickerController(
             window=self.task_picker_view,
             task_service=self.task_service,

@@ -2,14 +2,15 @@ import tkinter as tk
 
 
 class SessionInterruptOverlay:
-    COLLAPSED_WIDTH = 28
-    EXPANDED_WIDTH = 180
-    HEIGHT = 60
+    WIDTH_COLLAPSED = 70
+    WIDTH_EXPANDED = 80
+    HEIGHT = 42
 
-    def __init__(
-        self,
-        command,
-    ) -> None:
+    BG = "#1f2937"
+    TEXT = "#f9fafb"
+    ACCENT = "#22c55e"
+
+    def __init__(self, command):
         self.command = command
 
         root = tk.Tk()
@@ -17,38 +18,27 @@ class SessionInterruptOverlay:
         self.window = tk.Toplevel(root)
         self.window.overrideredirect(True)
         self.window.attributes("-topmost", True)
-        self.window.attributes("-alpha", 0.65)
+        self.window.attributes("-alpha", 0.82)
 
         self.screen_width = root.winfo_screenwidth()
         self.screen_height = root.winfo_screenheight()
 
-        self.y = int(self.screen_height * 0.3)
+        self.y = int(self.screen_height * 0.2)
 
         self.frame = tk.Frame(
             self.window,
-            bg="#111111",
+            bg="#554E4E",
         )
         self.frame.pack(fill="both", expand=True)
 
-        self.label = tk.Label(
-            self.frame,
-            text="タスク完了",
-            fg="white",
-            bg="#111111",
-            font=("Yu Gothic UI", 10, "bold"),
-        )
-
+        self.label = tk.Label(self.frame)
+        self.is_expanded = False
         self._collapse()
+        self._bind()
 
-        for widget in (
-            self.window,
-            self.frame,
-            self.label,
-        ):
-            widget.bind("<Enter>", self._on_enter)
-            widget.bind("<Leave>", self._on_leave)
-            widget.bind("<Button-1>", self._on_click)
-
+    # -------------------------
+    # public
+    # -------------------------
     def show(self):
         self.window.deiconify()
 
@@ -58,23 +48,67 @@ class SessionInterruptOverlay:
     def destroy(self):
         self.window.destroy()
 
-    def _collapse(self):
-        x = self.screen_width - self.COLLAPSED_WIDTH
+    # -------------------------
+    # render
+    # -------------------------
+    def _render(self, width: int, expanded: bool):
+        if expanded:
+            # "完了 →"
+            self.label = tk.Label(
+                self.frame,
+                text="完了 ▶",
+                fg="white",
+                bg="#554E4E",
+                font=("Yu Gothic UI", 10, "bold"),
+            )
 
-        self.window.geometry(f"{self.COLLAPSED_WIDTH}x{self.HEIGHT}+{x}+{self.y}")
-
-        self.label.pack_forget()
-
-    def _expand(self):
-        x = self.screen_width - self.EXPANDED_WIDTH
-
-        self.window.geometry(f"{self.EXPANDED_WIDTH}x{self.HEIGHT}+{x}+{self.y}")
+        else:
+            # collapsed: just ">"
+            self.label = tk.Label(
+                self.frame,
+                text="▶",
+                fg="white",
+                bg="#554E4E",
+                font=("Yu Gothic UI", 10, "bold"),
+            )
 
         self.label.pack(
             side="left",
             padx=12,
             pady=10,
         )
+
+    # -------------------------
+    # state
+    # -------------------------
+    def _collapse(self):
+        w = self.WIDTH_COLLAPSED
+        x = self.screen_width - w // 2
+
+        self.window.geometry(f"{w}x{self.HEIGHT}+{x}+{self.y}")
+        self.label.pack_forget()
+        self._render(w, expanded=False)
+
+    def _expand(self):
+        w = self.WIDTH_EXPANDED
+        x = self.screen_width - w
+
+        self.window.geometry(f"{w}x{self.HEIGHT}+{x}+{self.y}")
+        self.label.pack_forget()
+        self._render(w, expanded=True)
+
+    # -------------------------
+    # events
+    # -------------------------
+    def _bind(self):
+        for w in (
+            self.window,
+            self.frame,
+            self.label,
+        ):
+            w.bind("<Enter>", self._on_enter)
+            w.bind("<Leave>", self._on_leave)
+            w.bind("<Button-1>", self._on_click)
 
     def _on_enter(self, _):
         self._expand()
