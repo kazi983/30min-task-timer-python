@@ -72,6 +72,65 @@ class TaskPickerView(tk.Toplevel):
         self.last_selected_label.pack(pady=(0, 10))
 
         # =========================
+        # Leave Schedule Input
+        # =========================
+
+        leave_frame = tk.Frame(self, bg=_UIColors.BG)
+        leave_frame.pack(pady=(5, 10))
+
+        self.leave_time_final = tk.Label(
+            leave_frame,
+            text="⏰",
+            font=(c.FONT_FAMILY, 12),
+            bg=_UIColors.BG,
+            fg=_UIColors.TEXT_SUB,
+        )
+        self.leave_time_final.pack(side=tk.LEFT, padx=0)
+
+        self.leave_time_entry = tk.Entry(
+            leave_frame,
+            font=(c.FONT_FAMILY, 11),
+            relief="flat",
+            highlightthickness=1,
+            highlightbackground=_UIColors.ACCENT_DARK,
+            highlightcolor=_UIColors.ACCENT,
+            bg="#31394d",
+            fg="#fafafa",
+            width=10,
+        )
+        self.leave_time_entry.insert(0, "23:30")
+        self.leave_time_entry.pack(side=tk.LEFT, padx=6)
+
+        self.leave_time = tk.Label(
+            leave_frame,
+            text="💨",
+            font=(c.FONT_FAMILY, 12),
+            bg=_UIColors.BG,
+            fg=_UIColors.TEXT_SUB,
+        )
+        self.leave_time.pack(side=tk.LEFT, padx=0)
+
+        self.buffer_var = tk.StringVar(value="15")
+        self.buffer_menu = tk.OptionMenu(
+            leave_frame,
+            self.buffer_var,
+            "5",
+            "10",
+            "15",
+            "20",
+            "25",
+            "30",
+        )
+        self.buffer_menu.config(
+            bg=_UIColors.ACCENT_DARK,
+            fg=_UIColors.BASE,
+            relief="flat",
+            highlightthickness=0,
+            font=(c.FONT_FAMILY, 10),
+        )
+        self.buffer_menu.pack(side=tk.LEFT)
+
+        # =========================
         # Input
         # =========================
 
@@ -102,47 +161,6 @@ class TaskPickerView(tk.Toplevel):
             pady=6,
         )
         self.add_button.pack(side=tk.LEFT)
-
-        # =========================
-        # Leave Schedule Input
-        # =========================
-
-        leave_frame = tk.Frame(self, bg=_UIColors.BG)
-        leave_frame.pack(pady=(5, 10))
-
-        self.leave_time_entry = tk.Entry(
-            leave_frame,
-            font=(c.FONT_FAMILY, 11),
-            relief="flat",
-            highlightthickness=1,
-            highlightbackground=_UIColors.ACCENT_DARK,
-            highlightcolor=_UIColors.ACCENT,
-            bg="#31394d",
-            fg="#fafafa",
-            width=10,
-        )
-        self.leave_time_entry.insert(0, "23:30")
-        self.leave_time_entry.pack(side=tk.LEFT, padx=6)
-
-        self.buffer_var = tk.StringVar(value="15")
-
-        self.buffer_menu = tk.OptionMenu(
-            leave_frame,
-            self.buffer_var,
-            "5",
-            "10",
-            "15",
-            "20",
-            "25",
-            "30",
-        )
-        self.buffer_menu.config(
-            bg=_UIColors.ACCENT_DARK,
-            fg=_UIColors.BASE,
-            relief="flat",
-            highlightthickness=0,
-        )
-        self.buffer_menu.pack(side=tk.LEFT)
 
         # =========================
         # Listbox
