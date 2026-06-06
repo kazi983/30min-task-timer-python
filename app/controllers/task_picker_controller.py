@@ -13,12 +13,14 @@ It coordinates between TaskPickerView, TaskService, and TimerService.
 """
 
 from tkinter import messagebox
+from datetime import datetime
 
 import app.config.constants as c
 from app.models.session_service import SessionService
 from app.views.task_picker_view import TaskPickerView
 from app.models.task_service import TaskService
 from app.models.timer_service import TimerService
+from app.models.leave_schedule_service import LeaveScheduleService
 
 
 class TaskPickerController:
@@ -49,11 +51,17 @@ class TaskPickerController:
         self.task_service = task_service
         self.timer_service = timer_service
         self.session_service = session_service
+        self.leave_service = LeaveScheduleService(self.timer_service)
+        self.leave_service.set_callbacks(
+            on_warning=self.on_leave_warning,
+            on_stop=self.on_leave_stop,
+        )
         self.reopen_callback = reopen_callback
         self.open_task_management_callback = open_task_management_callback
         self.interrupt_overlay = interrupt_overlay
         self._current_task_id = None
         self._started_at = None
+        self._leave_blocked = False
 
         self.refresh_task_list()
 
@@ -117,6 +125,35 @@ class TaskPickerController:
         ):
             return
 
+        # =========================
+        # Leave schedule start
+        # =========================
+
+        leave_input = self.window.get_leave_schedule_input()
+
+        # #fix 日付け跨ぎ未対応
+        leave_time = datetime.strptime(
+            leave_input["leave_time"],
+            "%H:%M",
+        )
+
+        # 今日の日付に補正
+        now = datetime.now()
+        leave_time = leave_time.replace(
+            year=now.year,
+            month=now.month,
+            day=now.day,
+        )
+
+        self.leave_service.schedule_leave(
+            leave_time=leave_time,
+            buffer_minutes=leave_input["buffer_minutes"],
+        )
+
+        # =========================
+        # session start
+        # =========================
+
         self.task_service.mark_task_as_last_selected(task)
 
         self.window.destroy()
@@ -127,8 +164,14 @@ class TaskPickerController:
 
         self.timer_service.schedule(
             c.TIME_MS_INTERVAL,
-            self.reopen_callback,
+            self.safe_reopen,
         )
+
+    def safe_reopen(self):
+        if self._leave_blocked:
+            return
+
+        self.reopen_callback()
 
     def on_snooze(self):
         self.window.destroy()
@@ -157,3 +200,27 @@ class TaskPickerController:
 
         self.task_service.mark_task_as_complete(task)
         self.refresh_task_list()
+
+    def on_leave_warning(self):
+        from app.views.leave_schedule_view import LeaveScheduleView
+
+        self._leave_blocked = True
+
+        self.window.destroy()
+
+        LeaveScheduleView(self.timer_service.root, mode="warning")
+
+    def on_leave_stop(self):
+        from app.views.leave_schedule_view import LeaveScheduleView
+
+        self.interrupt_overlay.hide()
+
+        self.task_service.record_session(self.session_service.finish())
+
+        self.timer_service.cancel_all()
+
+        self._leave_blocked = True
+
+        self.window.destroy()
+
+        LeaveScheduleView(self.timer_service.root, mode="block")

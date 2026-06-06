@@ -104,6 +104,47 @@ class TaskPickerView(tk.Toplevel):
         self.add_button.pack(side=tk.LEFT)
 
         # =========================
+        # Leave Schedule Input
+        # =========================
+
+        leave_frame = tk.Frame(self, bg=_UIColors.BG)
+        leave_frame.pack(pady=(5, 10))
+
+        self.leave_time_entry = tk.Entry(
+            leave_frame,
+            font=(c.FONT_FAMILY, 11),
+            relief="flat",
+            highlightthickness=1,
+            highlightbackground=_UIColors.ACCENT_DARK,
+            highlightcolor=_UIColors.ACCENT,
+            bg="#31394d",
+            fg="#fafafa",
+            width=10,
+        )
+        self.leave_time_entry.insert(0, "23:30")
+        self.leave_time_entry.pack(side=tk.LEFT, padx=6)
+
+        self.buffer_var = tk.StringVar(value="15")
+
+        self.buffer_menu = tk.OptionMenu(
+            leave_frame,
+            self.buffer_var,
+            "5",
+            "10",
+            "15",
+            "20",
+            "25",
+            "30",
+        )
+        self.buffer_menu.config(
+            bg=_UIColors.ACCENT_DARK,
+            fg=_UIColors.BASE,
+            relief="flat",
+            highlightthickness=0,
+        )
+        self.buffer_menu.pack(side=tk.LEFT)
+
+        # =========================
         # Listbox
         # =========================
 
@@ -152,10 +193,10 @@ class TaskPickerView(tk.Toplevel):
         sub_frame = tk.Frame(bottom_frame, bg=_UIColors.BG)
         sub_frame.pack()
 
-        self.snooze_button = self.secondary_button(sub_frame, "あとで")
+        self.snooze_button = self._secondary_button(sub_frame, "あとで")
         self.snooze_button.pack(side=tk.LEFT, padx=8)
 
-        self.management_button = self.secondary_button(sub_frame, "編集")
+        self.management_button = self._secondary_button(sub_frame, "編集")
         self.management_button.pack(side=tk.LEFT, padx=8)
 
         # =========================
@@ -251,28 +292,20 @@ class TaskPickerView(tk.Toplevel):
             return None
         return self.tasks[selection[0]]
 
-    def secondary_button(self, parent, text):
-        return tk.Button(
-            parent,
-            text=text,
-            bg=_UIColors.ACCENT_DARK,
-            fg=_UIColors.BASE,
-            relief="flat",
-            font=(c.FONT_FAMILY, 10),
-            padx=16,
-            pady=8,
-            width=8,  # ← 幅固定
-            activebackground=_UIColors.SELECT_BG,
-        )
-
     def set_complete_callback(self, callback: Callable):
         self.on_complete_task = callback
+
+    def get_leave_schedule_input(self):
+        return {
+            "leave_time": self._normalize_time_input(self.leave_time_entry.get()),
+            "buffer_minutes": int(self.buffer_var.get()),
+        }
 
     def _setup_view(self) -> None:
 
         self.configure(bg=_UIColors.BG)
 
-        self.overrideredirect(True)
+        self.overrideredirect(True)  # #test
 
         self.attributes("-topmost", True)
         self.lift()
@@ -287,3 +320,56 @@ class TaskPickerView(tk.Toplevel):
         y = (self.winfo_screenheight() // 2) - (h // 2)
 
         self.geometry(f"{w}x{h}+{x}+{y}")
+
+    def _secondary_button(self, parent, text):
+        return tk.Button(
+            parent,
+            text=text,
+            bg=_UIColors.ACCENT_DARK,
+            fg=_UIColors.BASE,
+            relief="flat",
+            font=(c.FONT_FAMILY, 10),
+            padx=16,
+            pady=8,
+            width=8,  # ← 幅固定
+            activebackground=_UIColors.SELECT_BG,
+        )
+
+    def _normalize_time_input(self, value: str) -> str:
+        """
+        Accepts:
+            "400" -> "04:00"
+            "930" -> "09:30"
+            "1830" -> "18:30"
+            "04:00" -> "04:00"
+        """
+
+        value = value.strip()
+
+        # already formatted
+        if ":" in value:
+            h, m = value.split(":")
+            return f"{int(h):02d}:{int(m):02d}"
+
+        # numeric only
+        if not value.isdigit():
+            raise ValueError("Invalid time format")
+
+        if len(value) <= 2:
+            # "9" -> "09:00"
+            hour = int(value)
+            return f"{hour:02d}:00"
+
+        if len(value) == 3:
+            # "930" -> 9:30
+            hour = int(value[0])
+            minute = int(value[1:])
+            return f"{hour:02d}:{minute:02d}"
+
+        if len(value) == 4:
+            # "1830" -> 18:30
+            hour = int(value[:2])
+            minute = int(value[2:])
+            return f"{hour:02d}:{minute:02d}"
+
+        raise ValueError("Invalid time format length")
