@@ -42,6 +42,7 @@ class TaskPickerController:
         task_service: TaskService,
         timer_service: TimerService,
         session_service: SessionService,
+        leave_service: LeaveScheduleService,
         reopen_callback,
         open_task_management_callback,
         interrupt_overlay,
@@ -51,7 +52,7 @@ class TaskPickerController:
         self.task_service = task_service
         self.timer_service = timer_service
         self.session_service = session_service
-        self.leave_service = LeaveScheduleService(self.timer_service)
+        self.leave_service = leave_service
         self.leave_service.set_callbacks(
             on_warning=self.on_leave_warning,
             on_stop=self.on_leave_stop,
@@ -129,26 +130,27 @@ class TaskPickerController:
         # Leave schedule start
         # =========================
 
-        leave_input = self.window.get_leave_schedule_input()
+        if self.leave_service.schedule is None:
+            leave_input = self.window.get_leave_schedule_input()
 
-        # #fix 日付け跨ぎ未対応
-        leave_time = datetime.strptime(
-            leave_input["leave_time"],
-            "%H:%M",
-        )
+            # #fix 日付け跨ぎ未対応
+            leave_time = datetime.strptime(
+                leave_input["leave_time"],
+                "%H:%M",
+            )
 
-        # 今日の日付に補正
-        now = datetime.now()
-        leave_time = leave_time.replace(
-            year=now.year,
-            month=now.month,
-            day=now.day,
-        )
+            # 今日の日付に補正
+            now = datetime.now()
+            leave_time = leave_time.replace(
+                year=now.year,
+                month=now.month,
+                day=now.day,
+            )
 
-        self.leave_service.schedule_leave(
-            leave_time=leave_time,
-            buffer_minutes=leave_input["buffer_minutes"],
-        )
+            self.leave_service.schedule_leave(
+                leave_time=leave_time,
+                buffer_minutes=leave_input["buffer_minutes"],
+            )
 
         # =========================
         # session start

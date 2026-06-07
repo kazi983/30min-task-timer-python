@@ -17,6 +17,7 @@ import tkinter.font as tkfont
 
 from pathlib import Path
 
+from app.models.leave_schedule_service import LeaveScheduleService
 from app.models.task_service import TaskService
 from app.models.timer_service import TimerService
 from app.models.session_service import SessionService
@@ -70,6 +71,8 @@ class AppController:
 
         self.session_service = SessionService()
 
+        self.leave_service = LeaveScheduleService(self.timer_service)
+
         self.interrupt_overlay = SessionInterruptOverlay(
             command=self.complete_work_session
         )
@@ -111,6 +114,7 @@ class AppController:
 
         self.task_picker_view = TaskPickerView(
             root=self.root,
+            leave_service=self.leave_service,
         )
 
         self.interrupt_overlay.hide()
@@ -120,6 +124,7 @@ class AppController:
             task_service=self.task_service,
             timer_service=self.timer_service,
             session_service=self.session_service,
+            leave_service=self.leave_service,
             reopen_callback=self.complete_work_session,
             open_task_management_callback=self.open_task_management_view,
             interrupt_overlay=self.interrupt_overlay,

@@ -6,6 +6,7 @@ import os
 import tkinter as tk
 from collections.abc import Callable
 
+from app.models.leave_schedule_service import LeaveScheduleService
 from app.models.task import Task
 import app.config.constants as c
 
@@ -39,7 +40,11 @@ class TaskPickerView(tk.Toplevel):
     controller.
     """
 
-    def __init__(self, root: tk.Tk) -> None:
+    def __init__(
+        self,
+        root: tk.Tk,
+        leave_service: LeaveScheduleService,
+    ) -> None:
         super().__init__(root)
 
         self.title("Quick Start")
@@ -47,6 +52,7 @@ class TaskPickerView(tk.Toplevel):
         self._setup_view()
 
         self.on_complete_task: Callable | None = None
+        self.leave_service = leave_service
 
         self.tasks: list[Task] = []
 
@@ -76,66 +82,23 @@ class TaskPickerView(tk.Toplevel):
         # Leave Schedule Input
         # =========================
 
-        leave_frame = tk.Frame(self, bg=_UIColors.BG)
-        leave_frame.pack(pady=(5, 10))
+        self.leave_frame: tk.Frame = tk.Frame(self, bg=_UIColors.BG)
+        self.leave_frame.pack(pady=(5, 10))
 
-        self.leave_time_final = tk.Label(
-            leave_frame,
-            text="⏰",
-            font=(c.FONT_FAMILY, 12),
-            bg=_UIColors.BG,
-            fg=_UIColors.TEXT_SUB,
-        )
-        self.leave_time_final.pack(side=tk.LEFT, padx=0)
+        self.leave_time: str = ""
+        self.buffer_minutes: str = ""
 
-        self.leave_time_entry = tk.Entry(
-            leave_frame,
-            font=(c.FONT_FAMILY, 11),
-            relief="flat",
-            highlightthickness=1,
-            highlightbackground=_UIColors.ACCENT_DARK,
-            highlightcolor=_UIColors.ACCENT,
-            bg="#31394d",
-            fg="#fafafa",
-            width=10,
-        )
-        self.leave_time_entry.insert(0, "23:30")
-        self.leave_time_entry.pack(side=tk.LEFT, padx=6)
+        if leave_service.schedule is None:
+            self._show_schedule_input()
 
-        self.leave_time = tk.Label(
-            leave_frame,
-            text="💨",
-            font=(c.FONT_FAMILY, 12),
-            bg=_UIColors.BG,
-            fg=_UIColors.TEXT_SUB,
-        )
-        self.leave_time.pack(side=tk.LEFT, padx=0)
-
-        self.buffer_var = tk.StringVar(value="15")
-        self.buffer_menu = tk.OptionMenu(
-            leave_frame,
-            self.buffer_var,
-            "5",
-            "10",
-            "15",
-            "20",
-            "25",
-            "30",
-        )
-        self.buffer_menu.config(
-            bg=_UIColors.ACCENT_DARK,
-            fg=_UIColors.BASE,
-            relief="flat",
-            highlightthickness=0,
-            font=(c.FONT_FAMILY, 10),
-        )
-        self.buffer_menu.pack(side=tk.LEFT)
+        else:
+            self._show_schedule_summary()
 
         # =========================
         # Input
         # =========================
 
-        input_frame = tk.Frame(self, bg=_UIColors.BG)
+        input_frame: tk.Frame = tk.Frame(self, bg=_UIColors.BG)
         input_frame.pack(pady=10)
 
         self.task_input = tk.Entry(
@@ -175,7 +138,7 @@ class TaskPickerView(tk.Toplevel):
             font=(c.FONT_FAMILY, 12),
             activestyle="none",
             width=45,
-            height=15,
+            height=13,
             bg="#131b2e",
             fg=_UIColors.BASE,
             relief="flat",
@@ -341,17 +304,122 @@ class TaskPickerView(tk.Toplevel):
 
         self.geometry(f"{w}x{h}+{x}+{y}")
 
-    def _secondary_button(self, parent, text):
+    def _show_schedule_input(self, leave_time="23:30", buffer_minutes="15"):
+
+        parent = self.leave_frame
+
+        self._clear_frame(parent)
+
+        self.leave_icon_label = tk.Label(
+            parent,
+            text="⏰",
+            font=(c.FONT_FAMILY, 12),
+            bg=_UIColors.BG,
+            fg=_UIColors.TEXT_SUB,
+        )
+        self.leave_icon_label.pack(side=tk.LEFT, padx=0)
+
+        self.leave_time_entry = tk.Entry(
+            parent,
+            font=(c.FONT_FAMILY, 11),
+            relief="flat",
+            highlightthickness=1,
+            highlightbackground=_UIColors.ACCENT_DARK,
+            highlightcolor=_UIColors.ACCENT,
+            bg="#31394d",
+            fg="#fafafa",
+            width=10,
+        )
+        self.leave_time_entry.insert(0, leave_time)
+        self.leave_time_entry.pack(side=tk.LEFT, padx=6)
+
+        self.buffer_icon_label = tk.Label(
+            parent,
+            text="💨",
+            font=(c.FONT_FAMILY, 12),
+            bg=_UIColors.BG,
+            fg=_UIColors.TEXT_SUB,
+        )
+        self.buffer_icon_label.pack(side=tk.LEFT, padx=0)
+
+        self.buffer_var = tk.StringVar(value=buffer_minutes)
+        self.buffer_menu = tk.OptionMenu(
+            parent,
+            self.buffer_var,
+            "5",
+            "10",
+            "15",
+            "20",
+            "25",
+            "30",
+        )
+        self.buffer_menu.config(
+            bg=_UIColors.ACCENT_DARK,
+            fg=_UIColors.BASE,
+            relief="flat",
+            highlightthickness=0,
+            font=(c.FONT_FAMILY, 10),
+        )
+        self.buffer_menu.pack(side=tk.LEFT)
+
+    def _show_schedule_summary(self):
+
+        parent = self.leave_frame
+
+        self._clear_frame(parent)
+
+        self.leave_time = self.leave_service.schedule.stop_work_time.strftime("%H:%M")
+        self.buffer_minutes = self.leave_service.schedule.buffer_minutes
+
+        self.leave_time_label: tk.Label = tk.Label(
+            parent,
+            text=f"⏰ {self.leave_time}",
+            font=(c.FONT_FAMILY, 12),
+            bg=_UIColors.BG,
+            fg=_UIColors.TEXT_SUB,
+        )
+        self.leave_time_label.pack(side=tk.LEFT, padx=5)
+
+        self.buffer_minutes_label: tk.Label = tk.Label(
+            parent,
+            text=f"💨 {self.buffer_minutes}分前",
+            font=(c.FONT_FAMILY, 12),
+            bg=_UIColors.BG,
+            fg=_UIColors.TEXT_SUB,
+        )
+        self.buffer_minutes_label.pack(side=tk.LEFT, padx=5)
+
+        self.leave_change_button = self._secondary_button(
+            self.leave_frame, "変更", width=4
+        )
+        self.leave_change_button.pack(side=tk.LEFT, padx=8)
+        self.leave_change_button.config(command=self._switch_to_schedule_input)
+
+    def _clear_frame(self, parent: tk.Frame):
+
+        for widget in parent.winfo_children():
+            widget.destroy()
+
+    def _switch_to_schedule_input(self):
+
+        self.leave_service.cancel()
+
+        self._show_schedule_input(
+            self.leave_time,
+            self.buffer_minutes,
+        )
+
+    def _secondary_button(self, parent, text, width=8, fontsize=10):
         return tk.Button(
             parent,
             text=text,
             bg=_UIColors.ACCENT_DARK,
             fg=_UIColors.BASE,
             relief="flat",
-            font=(c.FONT_FAMILY, 10),
+            font=(c.FONT_FAMILY, fontsize),
             padx=16,
             pady=8,
-            width=8,  # ← 幅固定
+            width=width,
             activebackground=_UIColors.SELECT_BG,
         )
 
