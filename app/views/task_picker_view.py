@@ -2,6 +2,7 @@
 app/views/task_picker_view.py
 """
 
+import os
 import tkinter as tk
 from collections.abc import Callable
 
@@ -323,7 +324,8 @@ class TaskPickerView(tk.Toplevel):
 
         self.configure(bg=_UIColors.BG)
 
-        self.overrideredirect(True)  # #test
+        if os.getenv("TASK_MODE", "production") != "test":
+            self.overrideredirect(True)
 
         self.attributes("-topmost", True)
         self.lift()

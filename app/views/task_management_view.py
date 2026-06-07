@@ -2,6 +2,7 @@
 app/views/task_management_view.py
 """
 
+import os
 import tkinter as tk
 from tkinter import ttk
 
@@ -404,9 +405,10 @@ class TaskManagementView(tk.Toplevel):
     def _setup_view(self) -> None:
         self.configure(bg=_UIColors.BG_SUB)
 
-        self.overrideredirect(True)
-        self.attributes("-topmost", True)
+        if os.getenv("TASK_MODE", "production") != "test":
+            self.overrideredirect(True)
 
+        self.attributes("-topmost", True)
         self.lift()
         self.focus_force()
 
