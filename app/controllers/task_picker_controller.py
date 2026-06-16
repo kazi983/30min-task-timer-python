@@ -43,7 +43,8 @@ class TaskPickerController:
         timer_service: TimerService,
         session_service: SessionService,
         leave_service: LeaveScheduleService,
-        reopen_callback,
+        next_session_callback,
+        resume_callback,
         open_task_management_callback,
         interrupt_overlay,
     ) -> None:
@@ -57,7 +58,8 @@ class TaskPickerController:
             on_warning=self.on_leave_warning,
             on_stop=self.on_leave_stop,
         )
-        self.reopen_callback = reopen_callback
+        self.next_session_callback = next_session_callback
+        self.resume_callback = resume_callback
         self.open_task_management_callback = open_task_management_callback
         self.interrupt_overlay = interrupt_overlay
         self._current_task_id = None
@@ -173,15 +175,12 @@ class TaskPickerController:
         if self._leave_blocked:
             return
 
-        self.reopen_callback()
+        self.next_session_callback()
 
     def on_snooze(self):
         self.window.destroy()
 
-        self.timer_service.schedule(
-            c.TIME_MS_SNOOZE,
-            self.reopen_callback,
-        )
+        self.timer_service.schedule(c.TIME_MS_SNOOZE, self.resume_callback)
 
     def on_open_management(self):
         self.window.destroy()

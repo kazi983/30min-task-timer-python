@@ -102,6 +102,12 @@ class AppController:
 
         self.open_task_picker_view()
 
+    def resume_session(self) -> None:
+
+        self.interrupt_overlay.hide()
+
+        self.open_task_picker_view()
+
     def open_task_picker_view(self) -> None:
         """
         Open the task picker view.
@@ -125,7 +131,8 @@ class AppController:
             timer_service=self.timer_service,
             session_service=self.session_service,
             leave_service=self.leave_service,
-            reopen_callback=self.complete_work_session,
+            next_session_callback=self.complete_work_session,
+            resume_callback=self.resume_session,
             open_task_management_callback=self.open_task_management_view,
             interrupt_overlay=self.interrupt_overlay,
         )
