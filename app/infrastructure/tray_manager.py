@@ -63,9 +63,16 @@ class TrayManager:
         Start the system tray icon in detached mode.
 
         This runs the tray event loop without blocking the main application.
+        On Linux, no tray backend may be available (e.g. GNOME without the
+        AppIndicator extension). In that case the app keeps running without
+        a tray icon instead of crashing on startup.
         """
 
-        self.icon.run_detached()
+        try:
+            self.icon.run_detached()
+
+        except Exception:
+            pass
 
     def handle_restart(self) -> None:
         """

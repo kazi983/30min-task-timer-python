@@ -2,6 +2,26 @@
 
 Built with AI / Vibe Coding
 
+## Ubuntuでのセットアップ
+
+Ubuntu 26.04で実行する場合、以下のシステムパッケージが必要です。
+
+```bash
+sudo apt update
+sudo apt install python3-tk fonts-noto-cjk gir1.2-ayatanaappindicator3-0.1 python3-gi
+```
+
+- `python3-tk`: TkinterはUbuntuのpython3に標準で同梱されていないため必須。
+- `fonts-noto-cjk`: 日本語表示用フォント（`FONT_FAMILY`はLinuxでは`Noto Sans CJK JP`を使用）。
+- `gir1.2-ayatanaappindicator3-0.1` / `python3-gi`: システムトレイアイコン（pystray）の描画に必要。これらが無い場合、トレイアイコンは表示されませんがアプリ本体は起動します。GNOMEではトレイアイコンを表示するために「AppIndicator and KStatusNotifierItem Support」拡張機能の導入も必要です。
+
+Python側の依存関係は通常通りインストールします。
+
+```bash
+pip install -r requirements.txt
+python3 main.pyw
+```
+
 ## 画面構成
 ``` mermaid
 flowchart LR

@@ -11,7 +11,7 @@ TR_WIDTH_PRIORITY = 120
 TR_WIDTH_NAME = 180
 TR_WIDTH_DATE = 150
 
-FONT_FAMILY = "Meiryo"
+FONT_FAMILY = "Meiryo" if os.name == "nt" else "Noto Sans CJK JP"
 
 TIME_MS_SNOOZE = (
     10000 if os.getenv("TASK_MODE", "production") == "test" else 5 * 60 * 1000
