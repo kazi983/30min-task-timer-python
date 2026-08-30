@@ -171,15 +171,56 @@ class TaskPickerView(tk.Toplevel):
         )
         self.start_button.pack(pady=(0, 10))
 
-        # secondary row
-        sub_frame = tk.Frame(bottom_frame, bg=_UIColors.BG)
-        sub_frame.pack()
+        # =========================
+        # Snooze
+        # =========================
 
-        self.snooze_button = self._secondary_button(sub_frame, "あとで")
-        self.snooze_button.pack(side=tk.LEFT, padx=8)
+        snooze_frame = tk.Frame(bottom_frame, bg=_UIColors.BG)
+        # snooze_frame.pack(pady=(0, 10))
 
-        self.management_button = self._secondary_button(sub_frame, "編集")
-        self.management_button.pack(side=tk.LEFT, padx=8)
+        self.snooze_button = self._secondary_button(snooze_frame, "あとで")
+        # self.snooze_button.pack(side=tk.LEFT, padx=(0, 8))
+
+        # self.snooze_var = tk.StringVar(value="5分")
+
+        # self.snooze_menu = tk.OptionMenu(
+        #     snooze_frame,
+        #     self.snooze_var,
+        #     "5分",
+        #     "15分",
+        #     "30分",
+        #     "1時間",
+        #     "2時間",
+        #     "授業終了まで",
+        # )
+        # self.snooze_menu.config(
+        #     bg=_UIColors.ACCENT_DARK,
+        #     fg=_UIColors.BASE,
+        #     activebackground=_UIColors.SELECT_BG,
+        #     activeforeground=_UIColors.TEXT_SUB_B,
+        #     relief="flat",
+        #     highlightthickness=0,
+        #     font=(c.FONT_FAMILY, 10),
+        # )
+        # self.snooze_menu["menu"].config(
+        #     bg="#31394d",
+        #     fg=_UIColors.BASE,
+        #     activebackground=_UIColors.SELECT_BG,
+        #     activeforeground=_UIColors.TEXT_SUB_B,
+        #     font=(c.FONT_FAMILY, 10),
+        # )
+
+        # self.snooze_menu.pack(side=tk.LEFT)
+
+        # =========================
+        # Management
+        # =========================
+
+        self.management_button = self._secondary_button(
+            bottom_frame,
+            "編集",
+        )
+        self.management_button.pack()
 
         # =========================
         # bindings
@@ -356,10 +397,20 @@ class TaskPickerView(tk.Toplevel):
         self.buffer_menu.config(
             bg=_UIColors.ACCENT_DARK,
             fg=_UIColors.BASE,
+            activebackground=_UIColors.SELECT_BG,
+            activeforeground=_UIColors.TEXT_SUB_B,
             relief="flat",
             highlightthickness=0,
             font=(c.FONT_FAMILY, 10),
         )
+        self.buffer_menu["menu"].config(
+            bg="#31394d",
+            fg=_UIColors.BASE,
+            activebackground=_UIColors.SELECT_BG,
+            activeforeground=_UIColors.TEXT_SUB_B,
+            font=(c.FONT_FAMILY, 10),
+        )
+
         self.buffer_menu.pack(side=tk.LEFT)
 
     def _show_schedule_summary(self):

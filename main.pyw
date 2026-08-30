@@ -134,8 +134,6 @@ def cleanup():
 
     stop_event.set()
 
-    global server_socket
-
     if server_socket:
 
         try:
