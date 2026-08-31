@@ -328,8 +328,8 @@ class TaskPickerView(tk.Toplevel):
 
         self.configure(bg=_UIColors.BG)
 
-        if os.getenv("TASK_MODE", "production") != "test":
-            self.overrideredirect(True)
+        # if os.getenv("TASK_MODE", "production") != "test":
+        #     self.overrideredirect(True)
 
         self.attributes("-topmost", True)
         self.lift()
