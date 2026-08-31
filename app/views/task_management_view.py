@@ -250,6 +250,17 @@ class TaskManagementView(tk.Toplevel):
         )
         self.back_button.pack(side=tk.LEFT, padx=6)
 
+        self.exit_button = tk.Button(
+            right,
+            text="終了",
+            bg=_UIColors.DESTRUCTIVE,
+            fg="white",
+            relief="flat",
+            padx=14,
+            pady=6,
+        )
+        self.exit_button.pack(side=tk.LEFT, padx=6)
+
         # =========================
         # BINDINGS
         # =========================

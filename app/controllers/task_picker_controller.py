@@ -47,6 +47,7 @@ class TaskPickerController:
         resume_callback,
         open_task_management_callback,
         interrupt_overlay,
+        exit_callback,
     ) -> None:
 
         self.window = window
@@ -62,6 +63,7 @@ class TaskPickerController:
         self.resume_callback = resume_callback
         self.open_task_management_callback = open_task_management_callback
         self.interrupt_overlay = interrupt_overlay
+        self.exit_callback = exit_callback
         self._current_task_id = None
         self._started_at = None
         self._leave_blocked = False
@@ -73,6 +75,7 @@ class TaskPickerController:
         self.window.start_button.config(command=self.on_start_session)
         self.window.snooze_button.config(command=self.on_snooze)
         self.window.management_button.config(command=self.on_open_management)
+        self.window.exit_button.config(command=self.on_exit)
 
         # optional callbacks
         self.window.set_complete_callback(self.on_complete_task)
@@ -185,6 +188,16 @@ class TaskPickerController:
     def on_open_management(self):
         self.window.destroy()
         self.open_task_management_callback()
+
+    def on_exit(self):
+        if not messagebox.askokcancel(
+            "終了",
+            "アプリを終了しますか？",
+            parent=self.window,
+        ):
+            return
+
+        self.exit_callback()
 
     def on_complete_task(self):
         task = self.window.get_selected_task()

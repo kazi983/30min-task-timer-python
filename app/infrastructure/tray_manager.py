@@ -89,6 +89,21 @@ class TrayManager:
 
         Stops the tray icon and triggers application shutdown callback.
         """
-        self.icon.stop()
+        self.stop()
 
         self.on_exit()
+
+    def stop(self) -> None:
+        """
+        Stop the tray icon's event loop.
+
+        pystray runs the icon on a non-daemon thread, so this must be
+        called on every exit path (not just the tray menu) or the process
+        will keep running in the background after the window closes.
+        """
+
+        try:
+            self.icon.stop()
+
+        except Exception:
+            pass

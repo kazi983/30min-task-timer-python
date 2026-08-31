@@ -135,6 +135,7 @@ class AppController:
             resume_callback=self.resume_session,
             open_task_management_callback=self.open_task_management_view,
             interrupt_overlay=self.interrupt_overlay,
+            exit_callback=self.exit_app,
         )
 
     def open_task_management_view(self) -> None:
@@ -153,6 +154,7 @@ class AppController:
             window=self.task_management_view,
             task_service=self.task_service,
             open_task_picker_callback=self.open_task_picker_view,
+            exit_callback=self.exit_app,
         )
 
     def restart_app(self) -> None:
@@ -172,6 +174,8 @@ class AppController:
         """
 
         self.task_service.record_session(self.session_service.finish())
+
+        self.tray_manager.stop()
 
         self.root.after(0, self._shutdown)
 

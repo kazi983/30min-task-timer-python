@@ -217,11 +217,20 @@ class TaskPickerView(tk.Toplevel):
         # Management
         # =========================
 
+        secondary_row = tk.Frame(bottom_frame, bg=_UIColors.BG)
+        secondary_row.pack()
+
         self.management_button = self._secondary_button(
-            bottom_frame,
+            secondary_row,
             "編集",
         )
-        self.management_button.pack()
+        self.management_button.pack(side=tk.LEFT, padx=4)
+
+        self.exit_button = self._secondary_button(
+            secondary_row,
+            "終了",
+        )
+        self.exit_button.pack(side=tk.LEFT, padx=4)
 
         # =========================
         # bindings

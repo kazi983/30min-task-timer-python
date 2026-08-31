@@ -200,6 +200,13 @@ def main() -> None:
 
     cleanup()
 
+    # pystray's tray icon thread is not a daemon thread and, on some Linux
+    # setups (e.g. no AppIndicator/StatusNotifier support), can fail to
+    # terminate even after icon.stop() is called. Without this, the
+    # interpreter hangs waiting for that thread instead of returning to
+    # the terminal.
+    os._exit(0)
+
 
 # =========================
 # Entry Point

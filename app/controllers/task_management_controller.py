@@ -34,6 +34,7 @@ class TaskManagementController:
         window: TaskManagementView,
         task_service: TaskService,
         open_task_picker_callback,
+        exit_callback,
     ) -> None:
 
         self.window = window
@@ -41,6 +42,8 @@ class TaskManagementController:
         self.task_service = task_service
 
         self.open_task_picker_callback = open_task_picker_callback
+
+        self.exit_callback = exit_callback
 
         self.refresh_task_list()
 
@@ -64,6 +67,10 @@ class TaskManagementController:
             command=self.on_open_task_picker,
         )
 
+        self.window.exit_button.config(
+            command=self.on_exit,
+        )
+
     def refresh_task_list(self) -> None:
         """
         Refresh the task list displayed in the UI.
@@ -83,6 +90,20 @@ class TaskManagementController:
         self.window.destroy()
 
         self.open_task_picker_callback()
+
+    def on_exit(self) -> None:
+        """
+        Confirm and terminate the application from the task management screen.
+        """
+
+        if not messagebox.askokcancel(
+            "終了",
+            "アプリを終了しますか？",
+            parent=self.window,
+        ):
+            return
+
+        self.exit_callback()
 
     def on_add_task(self) -> None:
         """
