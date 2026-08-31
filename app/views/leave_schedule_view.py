@@ -3,6 +3,8 @@ app/views/leave_schedule_view.py
 """
 
 import tkinter as tk
+
+from app.infrastructure.window_geometry import center_window
 import app.config.constants as c
 
 
@@ -127,10 +129,4 @@ class LeaveScheduleView(tk.Toplevel):
 
         self.update_idletasks()
 
-        w = c.WINDOW_WIDTH
-        h = c.WINDOW_HEIGHT
-
-        x = (self.winfo_screenwidth() // 2) - (w // 2)
-        y = (self.winfo_screenheight() // 2) - (h // 2)
-
-        self.geometry(f"{w}x{h}+{x}+{y}")
+        center_window(self, c.WINDOW_WIDTH, c.WINDOW_HEIGHT)

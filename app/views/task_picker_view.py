@@ -6,6 +6,7 @@ import os
 import tkinter as tk
 from collections.abc import Callable
 
+from app.infrastructure.window_geometry import center_window
 from app.models.leave_schedule_service import LeaveScheduleService
 from app.models.task import Task
 import app.config.constants as c
@@ -337,13 +338,7 @@ class TaskPickerView(tk.Toplevel):
 
         self.update_idletasks()
 
-        w = c.WINDOW_WIDTH
-        h = c.WINDOW_HEIGHT
-
-        x = (self.winfo_screenwidth() // 2) - (w // 2)
-        y = (self.winfo_screenheight() // 2) - (h // 2)
-
-        self.geometry(f"{w}x{h}+{x}+{y}")
+        center_window(self, c.WINDOW_WIDTH, c.WINDOW_HEIGHT)
 
     def _show_schedule_input(self, leave_time="23:30", buffer_minutes="15"):
 
