@@ -1,5 +1,8 @@
 # 30min-task-timer
 
+> **新バージョン（v2：Electron + Firebase + Android）は [kazi983/30min-task-timer](https://github.com/kazi983/30min-task-timer) で開発しています。**
+> このリポジトリは Python / Tkinter 版（v1）で、v2 に乗り換えるまで使い続けます。
+
 Built with AI / Vibe Coding
 
 ## Ubuntuでのセットアップ
