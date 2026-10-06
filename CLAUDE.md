@@ -8,6 +8,13 @@ A Windows/Linux desktop app (Tkinter) that nags the user every 30 minutes to pic
 tracks time spent per task. It also supports a "leave time" schedule that warns/force-stops
 work sessions before the user needs to leave.
 
+**A rewrite (v2) is in progress under `v2/`** — Electron + TypeScript + React desktop app,
+Firebase (Firestore) for sync, and a planned Android app. Requirements live in
+`v2/docs/requirements.md`; see `v2/desktop/README.md` and `v2/firebase/README.md`. The rest of
+this file describes v1 (repo root: `main.pyw`, `app/`), which stays in use until v2 replaces it.
+In v2, use `npm run typecheck`, `npm test` and `npm run e2e` (in `v2/desktop`) and `npm test`
+(in `v2/firebase`) before committing.
+
 ## Coding Conventions
 
 Write comments, commit messages, and identifiers in English.
